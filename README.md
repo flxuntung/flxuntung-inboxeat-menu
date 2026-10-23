@@ -4,7 +4,7 @@ Web-App für das Restaurant: Tagesgerichte auf Spanisch eintragen, Illustration 
 
 ## Aufbau
 
-- `index.html` Oberfläche (Spanisch), Logo `logo.png`
+- `public/index.html` Oberfläche (Spanisch), Logo `public/logo.png`
 - `api/generate.js` übersetzt fehlende englische Zeilen, baut den Prompt, startet die Freepik-Aufgabe
 - `api/status.js` fragt den Stand der Aufgabe ab
 - `api/image.js` lädt das fertige Bild für den Browser (Canvas-Export)
