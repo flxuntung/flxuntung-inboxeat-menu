@@ -179,6 +179,7 @@ textarea{min-height:130px;border:1.5px solid var(--rule-soft);padding:10px;resiz
           <option value="A4">A4 para imprimir (2480 × 3508)</option>
         </select>
         <p class="hint">La ilustración se crea a la medida del formato. Si cambias el formato, crea una ilustración nueva.</p>
+        <p class="hint" id="postHint" hidden>Instagram post: solo el menú, sin ilustración. Para la ilustración elige Story o A4.</p>
       </div>
 
       <div class="row">
@@ -193,7 +194,6 @@ textarea{min-height:130px;border:1.5px solid var(--rule-soft);padding:10px;resiz
         <h2 id="ch">Carta</h2>
         <div class="row">
           <button type="button" class="link" id="dlIll" disabled>Solo ilustración</button>
-          <button type="button" class="btn ghost" id="dlMenu">Solo menú</button>
           <button type="button" class="btn ghost" id="redo" hidden>Otra ilustración</button>
           <button type="button" class="btn" id="dl">Descargar carta</button>
         </div>
@@ -227,7 +227,7 @@ let pw="";
 try{pw=localStorage.getItem(PWKEY)||""}catch(e){}
 try{const s=JSON.parse(localStorage.getItem(KEY)||"null");if(s&&s.dishes)state={...state,...s}}catch(e){}
 const save=()=>{try{localStorage.setItem(KEY,JSON.stringify(state))}catch(e){console.warn("no se pudo guardar el estado",e)}};
-const FORMATS={"4:5":{W:1080,H:1350,img:"16:9"},"9:16":{W:1080,H:1920,img:"4:3"},"A4":{W:2480,H:3508,img:"3:2"}};
+const FORMATS={"4:5":{W:1080,H:1350,img:"16:9"},"9:16":{W:1080,H:1920,img:"16:9"},"A4":{W:2480,H:3508,img:"16:9"}};
 if(!FORMATS[state.aspect])state.aspect="4:5";
 const fmt=()=>FORMATS[state.aspect]||FORMATS["4:5"];
 const sig=d=>JSON.stringify(d.map(x=>(x.es||"").trim().toLowerCase()).filter(Boolean));
@@ -397,24 +397,16 @@ const themeKey=()=>(state.theme&&state.theme!=="auto"&&THEMES[state.theme])?stat
 const dayTheme=()=>THEMES[themeKey()];
 const dayTint=()=>dayTheme().bg;
 // Draws the whole card at width W x height H. Layout is proportional, so preview and download match.
+// The Instagram post (4:5) is the reference: text only, 1080x1350. Story and A4 reuse its text size;
+// if needed the illustration gets a little shorter (never below 16:9) so the text keeps that size.
 function drawCard(ctx,W,H,img,textOnly){
   const f=fmt();const [rw,rh]=f.img.split(":").map(Number);
-  const s=W/1080, IH=textOnly?Math.round(70*W/1080):Math.round(W*rh/rw);
-  ctx.fillStyle=dayTint();ctx.fillRect(0,0,W,H);
-  // illustration, cover-cropped into the top box (skipped for the text-only menu)
-  if(textOnly){}
-  else if(img){
-    const r=Math.max(W/img.naturalWidth,IH/img.naturalHeight),sw=W/r,sh=IH/r;
-    ctx.drawImage(img,(img.naturalWidth-sw)/2,(img.naturalHeight-sh)/2,sw,sh,0,0,W,IH);
-  }else{
-    ctx.fillStyle="#f4f4f2";ctx.fillRect(0,0,W,IH);
-    ctx.fillStyle="#8a8a8a";ctx.textAlign="center";ctx.font=`300 ${30*s}px Jost, Arial, sans-serif`;
-    ctx.fillText("La ilustración aparece aquí",W/2,IH/2);
-  }
+  const s=W/1080;
+  let IH=textOnly?Math.round(70*s):Math.round(W*rh/rw);
   // text block: editorial hierarchy (serif for dishes and prices, spaced sans for labels), scaled to fit below the image
   const S="Jost, 'Helvetica Neue', Arial, sans-serif";
   const isA4=state.aspect==="A4";
-  const pad=(isA4?96:64)*s, top=IH+pad*0.6, bottomPad=isA4?pad*1.2:pad*1.1, maxW=W-2*pad*1.45;
+  const pad=(isA4?96:64)*s, bottomPad=isA4?pad*1.2:pad*1.1, maxW=W-2*pad*1.45;
   const dishes=state.dishes.filter(x=>x.es||x.en).map(d=>{
     const es=(d.es||"").trim(),en=(d.en||"").trim();
     const same=es&&en&&es.toLowerCase().replace(/[^\p{L}\p{N}]/gu,"")===en.toLowerCase().replace(/[^\p{L}\p{N}]/gu,"");
@@ -454,9 +446,25 @@ function drawCard(ctx,W,H,img,textOnly){
   }
   // 1) scale so everything fits (dishes up to 1.3x); 2) header and dishes under the image, prices and place at the bottom;
   // 3) spare space goes into the course gaps up to a cap, the rest stays between dishes and prices
-  const avail=H-top-bottomPad;
   const need=layout(s,false,0);
-  const k=s*Math.min(1.3,avail/need);
+  // reference ratio = what the 4:5 text-only post would use (1350 high, 70 top, 64 pad)
+  const rRef=Math.min(1.3,((1350-70-64*0.6-64*1.1)*s)/need);
+  if(!textOnly){
+    const ihMax=H-pad*0.6-bottomPad-need*rRef;
+    IH=Math.round(Math.max(W*(isA4?0.5:9/16),Math.min(IH,ihMax)));
+  }
+  const top=IH+pad*0.6, avail=H-top-bottomPad;
+  ctx.fillStyle=dayTint();ctx.fillRect(0,0,W,H);
+  if(textOnly){}
+  else if(img){
+    const r=Math.max(W/img.naturalWidth,IH/img.naturalHeight),sw=W/r,sh=IH/r;
+    ctx.drawImage(img,(img.naturalWidth-sw)/2,(img.naturalHeight-sh)/2,sw,sh,0,0,W,IH);
+  }else{
+    ctx.fillStyle="#f4f4f2";ctx.fillRect(0,0,W,IH);
+    ctx.fillStyle="#8a8a8a";ctx.textAlign="center";ctx.font=`300 ${30*s}px Jost, Arial, sans-serif`;
+    ctx.fillText("La ilustración aparece aquí",W/2,IH/2);
+  }
+  const k=s*Math.min(textOnly?1.3:rRef,avail/need);
   const gap=56*Math.min(k,s*1.08);
   const hTop=layout(k,false,0,"top"), hBot=layout(k,false,0,"bottom");
   const free=Math.max(0,avail-hTop-hBot-gap);
@@ -471,7 +479,7 @@ function renderCard(){
   rq=requestAnimationFrame(()=>{
     const f=fmt(),c=$("cardCanvas"),PW=900,PH=Math.round(PW*f.H/f.W);
     if(c.width!==PW||c.height!==PH){c.width=PW;c.height=PH}
-    drawCard(c.getContext("2d"),PW,PH,getImg(state.image));
+    drawCard(c.getContext("2d"),PW,PH,getImg(state.image),state.aspect==="4:5");
   });
   const th=THEMES[themeKey()];const autoKey=autoThemeKey(state.date);
   $("themeHint").textContent=(!state.theme||state.theme==="auto")
@@ -482,9 +490,12 @@ function renderCard(){
   if(stale){note.hidden=false;note.textContent=(state.aspectUsed&&state.aspectUsed!==fmt().img)?"Formato cambiado: la ilustración se recorta. Crea una nueva para que encaje bien.":"Platos cambiados: la ilustración ya no coincide. Crea una nueva."}
   else note.hidden=true;
   $("dlIll").disabled=!state.image;
-  $("dlMenu").hidden=state.aspect!=="4:5";
+  const post=state.aspect==="4:5";
+  $("go").hidden=post;$("prog").hidden=post||$("prog").hidden;
+  $("dlIll").hidden=post;
+  $("postHint").hidden=!post;
   $("go").textContent=stale?"Crear ilustración nueva":(state.image?"Crear otra ilustración":"Crear ilustración");
-  $("redo").hidden=!state.image||isPhone();
+  $("redo").hidden=!state.image||isPhone()||state.aspect==="4:5";
   syncBar();
 }
 try{Promise.all(["400 40px 'Old Standard TT'","300 24px Jost","400 18px Jost","500 21px Jost"].map(f=>document.fonts.load(f))).then(renderCard);document.fonts.ready.then(renderCard)}catch(e){}
@@ -493,6 +504,7 @@ try{Promise.all(["400 40px 'Old Standard TT'","300 24px Jost","400 18px Jost","5
 let running=false;
 $("form").addEventListener("submit",async e=>{
   e.preventDefault();if(running)return;
+  if(state.aspect==="4:5"){setMsg("msg","Instagram post no lleva ilustración. Elige Story o A4.","err");return}
   const dishes=state.dishes.filter(d=>d.es.trim()||d.en.trim());
   if(!dishes.length){setMsg("msg","Añade al menos un plato.","err");return}
   running=true;$("go").disabled=true;syncBar();const prog=$("prog");prog.hidden=false;const bar=prog.firstElementChild;bar.style.width="4%";
@@ -537,7 +549,8 @@ async function toJpegDataUrl(blob){
 }
 /* ---------- download ---------- */
 async function loadImg(src){const im=new Image();im.src=src;await im.decode();return im}
-async function renderPNG(textOnly){
+async function renderPNG(){
+  const textOnly=state.aspect==="4:5";
   try{await Promise.all(["400 40px 'Old Standard TT'","300 24px Jost","400 18px Jost","500 21px Jost"].map(f=>document.fonts.load(f)).concat([document.fonts.ready]))}catch(e){}
   const img=state.image?await loadImg(state.image).catch(()=>null):null;
   const f=fmt(),c=document.createElement("canvas");c.width=f.W;c.height=f.H;
@@ -549,8 +562,7 @@ const isPhone=()=>matchMedia("(max-width:640px)").matches;
 async function saveCard(textOnly){
   setMsg("dlMsg","Preparando…");
   try{
-    textOnly=textOnly===true;
-    const blob=await renderPNG(textOnly);const name="menu-"+state.date+"-"+state.aspect.replace(":","x")+(textOnly?"-solo-menu":"")+".png";
+    const blob=await renderPNG();const name="menu-"+state.date+"-"+state.aspect.replace(":","x")+".png";
     const file=new File([blob],name,{type:"image/png"});
     if(isPhone()&&navigator.canShare&&navigator.canShare({files:[file]})){
       try{await navigator.share({files:[file],title:"Menú del día"});setMsg("dlMsg","Listo.","ok");return}
@@ -559,17 +571,17 @@ async function saveCard(textOnly){
     download(blob,name);setMsg("dlMsg","Carta descargada.","ok");
   }catch(e){setMsg("dlMsg","No se pudo crear la imagen.","err")}
 }
-$("dl").onclick=()=>saveCard(false);
-$("dlMenu").onclick=()=>saveCard(true);
+$("dl").onclick=()=>saveCard();
 /* mobile bar: main action is "create" until an up-to-date image exists, then "save/share" */
 function syncBar(){
-  const ready=!!state.image&&!isStale();
+  const post=state.aspect==="4:5";
+  const ready=post||(!!state.image&&!isStale());
   $("mMain").textContent=running?"Creando…":ready?"Guardar":($("go").textContent);
   $("mMain").disabled=running;
-  $("mRedo").hidden=!ready;$("mRedo").disabled=running;
-  $("mRedo").parentElement.classList.toggle("three",ready);
+  $("mRedo").hidden=!ready||post;$("mRedo").disabled=running;
+  $("mRedo").parentElement.classList.toggle("three",ready&&!post);
 }
-$("mMain").onclick=()=>{if(!!state.image&&!isStale())saveCard();else $("form").requestSubmit()};
+$("mMain").onclick=()=>{if(state.aspect==="4:5"||(!!state.image&&!isStale()))saveCard();else $("form").requestSubmit()};
 const regenerate=()=>{if(running)return;$("form").requestSubmit()};
 $("mRedo").onclick=regenerate;$("redo").onclick=regenerate;
 $("mView").onclick=()=>{const sec=$("cartaSec");const r=sec.getBoundingClientRect();
