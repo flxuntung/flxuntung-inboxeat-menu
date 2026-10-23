@@ -65,7 +65,8 @@ textarea{min-height:130px;border:1.5px solid var(--rule-soft);padding:10px;resiz
 .card{background:#fff;color:#111;border:2px solid #111;padding:26px 24px 30px;display:grid;gap:14px;text-align:center;font-family:var(--serif);font-weight:400}
 .card .logo{width:86px;height:auto;justify-self:center}
 .ill{aspect-ratio:3/2;width:100%;background:var(--wash);display:grid;place-items:center;overflow:hidden;position:relative}
-.ill img{width:100%;height:100%;object-fit:cover;display:block}
+.ill.has-img{aspect-ratio:auto!important;background:none}
+.ill img{width:100%;height:auto;display:block}
 .ill p{font-family:var(--sans);font-weight:300;font-size:13px;color:var(--ink-soft);margin:0;padding:16px;max-width:30ch;letter-spacing:.04em}
 .c-date{font-size:clamp(26px,4vw,34px);margin-top:4px}
 .c-num{font-size:16px}
@@ -227,7 +228,7 @@ function renderDishes(){
 function fillForm(){$("date").value=state.date;$("num").value=state.num;$("aspect").value=state.aspect;renderDishes();renderCard()}
 $("date").onchange=e=>{if(e.target.value){state.date=e.target.value;renderCard();save()}};
 $("num").oninput=e=>{state.num=e.target.value;renderCard();save()};
-$("aspect").onchange=e=>{state.aspect=e.target.value;save()};
+$("aspect").onchange=e=>{state.aspect=e.target.value;renderCard();save()};
 $("add").onclick=()=>{state.dishes.push({es:"",en:"",auto:true});renderDishes();save();$("es-"+(state.dishes.length-1)).focus()};
 $("newMenu").onclick=()=>{
   const n=parseInt(String(state.num||"").replace(/\D/g,""),10);
@@ -264,7 +265,8 @@ function renderCard(){
   const cp=$("cPrices");cp.innerHTML="";
   PRICES.forEach(p=>{const d=document.createElement("div");const b=document.createElement("b");b.textContent=p.amount;d.append(b,document.createTextNode(p.label));cp.appendChild(d)});
   $("cFoot").textContent=FOOT;
-  const ill=$("ill");const stale=state.image&&state.imageSig!==sig(state.dishes);
+  const ill=$("ill");const stale=state.image&&(state.imageSig!==sig(state.dishes)||(state.aspectUsed&&state.aspectUsed!==state.aspect));
+  ill.style.aspectRatio=(state.aspect||"3:2").replace(":"," / ");ill.classList.toggle("has-img",!!state.image);
   if(state.image){
     let img=ill.querySelector("img");
     if(!img||img.getAttribute("src")!==state.image){ill.innerHTML="";img=document.createElement("img");img.alt="Ilustración del menú";img.src=state.image;ill.appendChild(img)}
