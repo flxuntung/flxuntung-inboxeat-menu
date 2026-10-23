@@ -18,7 +18,8 @@ module.exports = async (req, res) => {
       const tr = await L.translate(missing.map((d) => d.es));
       missing.forEach((d, i) => { d.en = tr[i] || ""; });
     }
-    const prompt = L.buildPrompt(dishes.map((d) => d.en || d.es));
+    const theme = /^[a-z]{2,20}$/.test(String(body.theme || "")) ? body.theme : "none";
+    const prompt = L.buildPrompt(dishes.map((d) => d.en || d.es), theme);
     const aspect = L.ASPECT[body.aspect] || L.ASPECT["3:2"];
 
     const payload = {

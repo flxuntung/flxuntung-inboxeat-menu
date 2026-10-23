@@ -569,7 +569,7 @@ $("form").addEventListener("submit",async e=>{
   const t0=Date.now();const tick=setInterval(()=>{bar.style.width=Math.min(92,4+(Date.now()-t0)/900)+"%"},600);
   try{
     setMsg("msg","Traduciendo y enviando…");
-    const start=await api("/api/generate",{method:"POST",body:JSON.stringify({dishes:dishes.map(d=>({es:d.es,en:d.en})),aspect:fmt().img})});
+    const start=await api("/api/generate",{method:"POST",body:JSON.stringify({dishes:dishes.map(d=>({es:d.es,en:d.en})),aspect:fmt().img,theme:themeKey()})});
     start.dishes.forEach((d,i)=>{const s=state.dishes.find(x=>x.es.trim()===d.es&&!x.en)||state.dishes[i];if(s&&!s.en&&s.es.trim()===d.es){s.en=d.en;s.auto=true}});
     renderDishes();renderCard();save();
     setMsg("msg","Creando la ilustración…");
