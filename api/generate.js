@@ -26,7 +26,22 @@ module.exports = async (req, res) => {
       aspect_ratio: aspect,
       resolution: L.env("IMAGE_RESOLUTION", "1K").toUpperCase(),
     };
-    const data = await L.freepik(`/text-to-image/${L.modelPath()}`, { method: "POST", body: JSON.stringify(payload) });
+    // Style reference: the illustration the restaurant chose, served from this app.
+    const host = req.headers["x-forwarded-host"] || req.headers.host;
+    const styleRef = L.env("STYLE_REFERENCE", "on") !== "off" && host
+      ? [{ image: `https://${host}/style-ref.jpg`, mime_type: "image/jpeg",
+           text: "Style reference only: copy the drawing technique, paper background, color palette, black tableware and composition style. Do not copy these dishes." }]
+      : null;
+    let data;
+    try {
+      data = await L.freepik(`/text-to-image/${L.modelPath()}`, {
+        method: "POST",
+        body: JSON.stringify(styleRef ? { ...payload, reference_images: styleRef } : payload),
+      });
+    } catch (e) {
+      if (!styleRef || (e.status && e.status !== 400 && e.status !== 422)) throw e;
+      data = await L.freepik(`/text-to-image/${L.modelPath()}`, { method: "POST", body: JSON.stringify(payload) });
+    }
     const task = (data && data.data) || data || {};
     const taskId = task.task_id || task.id;
     if (!taskId) return L.json(res, 502, { error: "Freepik no devolvió un identificador de tarea.", detail: data });
