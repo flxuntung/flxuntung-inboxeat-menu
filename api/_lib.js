@@ -79,13 +79,16 @@ function buildPrompt(en) {
   const kind = WORDS[d.length] || d.length + "-course";
   const n = d.length;
   const numbered = d.map((x, k) => `${k + 1}. ${x}`).join("; ");
-  return `Overhead editorial food illustration for the daily menu of a chef-run Spanish bistro in Valencia, the kind of place with a Bib Gourmand: honest, seasonal market cooking executed with finesse. ${n} courses, each shown exactly once on its own plate or bowl: ${numbered}.
+  const word = ["zero","one","two","three","four","five","six"][n] || String(n);
+  return `A purely visual painting with no text of any kind: no words, no letters, no handwritten labels, no captions, no arrows, no annotations, no menu, no signage.
 
-The plating is what a talented chef would send out today: elegant and precise but warm and natural, never fussy. Real ingredients you can identify, cooked properly: a proper sear, a glossy emulsion spooned beside rather than over, fresh herbs and flowers placed with intention, a few drops of good olive oil, contrasting textures, generous yet composed portions with negative space on the plate. Colours come from the food itself: deep caramelisation, bright greens, ripe fruit, rich sauces. Every dish looks mouth-watering.
+Overhead view of a lunch table at a small chef-owned restaurant in Valencia with Michelin-level craft but a warm, homely soul: food that tastes like it was cooked with love by someone who trained in great kitchens. Exactly ${word} dishes, one plate or bowl per course, each course appears only once (never two of the same dish): ${numbered}.
 
-Tableware: handmade stoneware in warm natural tones (cream, sand, speckled grey, one deep terracotta), varied shapes and sizes, on a light linen tablecloth. Only a few quiet props: a linen napkin, a small glass of water, a bit of bread, a sprig of herbs. Arrange the plates in a calm, balanced layout that fills the frame, all plates fully visible.
+Each plate is cooked with real skill and plated with quiet confidence: a precise, generous main element; a glossy, deeply flavoured sauce or jus pooled with care; a crisp or crunchy contrast; perfectly seasonal garnish such as tender herbs, a few edible flowers, fine shavings or a light dusting of spice; a few drops of green olive oil. Elegant yet unpretentious, inviting rather than austere, with natural textures, beautiful caramelisation and colours that come from the ingredients. Every dish looks warm, fresh and irresistibly delicious.
 
-Style: refined hand-painted illustration in gouache and watercolour with fine pencil and ink detailing, like a high-end cookbook or a New Yorker food feature. Soft natural daylight from the side, delicate shadows, subtle paper texture. Clearly painted, not photographic. No text, no lettering, no hands, no people.`;
+Handmade ceramic plates and bowls in soft natural glazes (cream, oat, speckled stone, one deep terracotta), varied sizes, on a pale linen cloth over a light oak table. A few quiet details only: a folded linen napkin, a small water glass, a little torn bread. Calm, balanced arrangement that fills the frame, every plate fully visible.
+
+Painted in refined gouache and watercolour with delicate pencil and ink detailing, soft natural side light, gentle shadows, fine paper texture. Clearly a painting, not a photograph. The image contains no writing at all.`;
 }
 
 // "Vegetable Soup" -> "Vegetable soup"; words capitalized in the Spanish source (Sacher, Spätzle) keep their capital.
