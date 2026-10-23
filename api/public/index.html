@@ -156,6 +156,20 @@ textarea{min-height:130px;border:1.5px solid var(--rule-soft);padding:10px;resiz
       </details>
 
       <div class="field">
+        <label class="label" for="theme">Tema del día</label>
+        <select id="theme">
+          <option value="auto">Automático según el día</option>
+          <option value="lactosa">Sin lactosa (lunes)</option>
+          <option value="marisco">Marisco (martes)</option>
+          <option value="gluten">Sin gluten (miércoles)</option>
+          <option value="vegetariano">Vegetariano (jueves)</option>
+          <option value="freaky">Freaky Friday · Finger food (viernes)</option>
+          <option value="none">Sin tema</option>
+        </select>
+        <p class="hint" id="themeHint"></p>
+      </div>
+
+      <div class="field">
         <label class="label" for="aspect">Formato de la carta</label>
         <select id="aspect">
           <option value="4:5">Instagram post · 4:5 (1080 × 1350)</option>
@@ -259,7 +273,7 @@ function weekdaysBetween(a,b){
 }
 const autoNum=date=>"#"+(numRef.num+weekdaysBetween(numRef.date,date));
 function applyAutoNum(){if(!state.numManual){state.num=autoNum(state.date);$("num").value=state.num}}
-function fillForm(){$("date").value=state.date;$("num").value=state.num;$("aspect").value=state.aspect;renderDishes();renderCard()}
+function fillForm(){$("date").value=state.date;$("num").value=state.num;$("aspect").value=state.aspect;$("theme").value=state.theme||"auto";renderDishes();renderCard()}
 $("date").onchange=e=>{if(e.target.value){state.date=e.target.value;state.numManual=false;applyAutoNum();renderCard();save()}};
 $("num").oninput=e=>{
   state.num=e.target.value;const n=parseInt(state.num.replace(/\D/g,""),10);
@@ -269,9 +283,10 @@ $("num").oninput=e=>{
 };
 $("num").onblur=()=>{if(!state.num.trim()){state.numManual=false;applyAutoNum();renderCard();save()}};
 $("aspect").onchange=e=>{state.aspect=e.target.value;renderCard();save()};
+$("theme").onchange=e=>{state.theme=e.target.value;renderCard();save()};
 $("add").onclick=()=>{state.dishes.push({es:"",en:"",auto:true});renderDishes();save();$("es-"+(state.dishes.length-1)).focus()};
 $("newMenu").onclick=()=>{
-  state={...state,date:todayISO(),numManual:false,dishes:[{es:"",en:"",auto:true}],image:null,imageSig:""};
+  state={...state,date:todayISO(),numManual:false,theme:"auto",dishes:[{es:"",en:"",auto:true}],image:null,imageSig:""};
   applyAutoNum();fillForm();save();setMsg("msg","");$("es-0").focus();
 };
 $("parse").onclick=()=>{
@@ -305,21 +320,26 @@ function wrap(ctx,text,max){const words=String(text).split(/\s+/);const lines=[]
   for(const w of words){const t=cur?cur+" "+w:w;if(ctx.measureText(t).width>max&&cur){lines.push(cur);cur=w}else cur=t}if(cur)lines.push(cur);return lines}
 const isStale=()=>!!state.image&&(state.imageSig!==sig(state.dishes)||(state.aspectUsed&&state.aspectUsed!==fmt().img));
 
-/* very subtle pastel tint per weekday theme: Mon sin lactosa, Tue marisco, Wed sin gluten, Thu vegetariano, Fri freaky friday */
-const DAY_THEME={
-  1:{bg:"#e8eef6",accent:"#56708f",name:"Sin lactosa"},
-  2:{bg:"#e3f0ee",accent:"#3c7a74",name:"Marisco"},
-  3:{bg:"#f5eedd",accent:"#93743a",name:"Sin gluten"},
-  4:{bg:"#e7f0e1",accent:"#587a47",name:"Vegetariano"},
-  5:{bg:"#f8e6de",accent:"#ad6249",name:"Freaky Friday · Finger food"}
+/* Themes: each theme owns its colors (palette "Mediterráneo"). The weekday picks the theme automatically;
+   the restaurant can override the theme for one menu, the colors always follow the theme. */
+const THEMES={
+  lactosa:{bg:"#efe7da",accent:"#3d5a80",name:"Sin lactosa"},
+  marisco:{bg:"#dce8ee",accent:"#2f5d7c",name:"Marisco"},
+  gluten:{bg:"#f3e2c0",accent:"#9a6224",name:"Sin gluten"},
+  vegetariano:{bg:"#e2e6cf",accent:"#5f6b33",name:"Vegetariano"},
+  freaky:{bg:"#f5d6c8",accent:"#bf5236",name:"Freaky Friday · Finger food"},
+  none:{bg:"#ffffff",accent:"#8a8a8a",name:""}
 };
-const dayTheme=iso=>DAY_THEME[new Date(iso+"T00:00:00Z").getUTCDay()]||{bg:"#ffffff",accent:"#8a8a8a",name:""};
-const dayTint=iso=>dayTheme(iso).bg;
+const WEEKDAY_THEME={1:"lactosa",2:"marisco",3:"gluten",4:"vegetariano",5:"freaky"};
+const autoThemeKey=iso=>WEEKDAY_THEME[new Date(iso+"T00:00:00Z").getUTCDay()]||"none";
+const themeKey=()=>(state.theme&&state.theme!=="auto"&&THEMES[state.theme])?state.theme:autoThemeKey(state.date);
+const dayTheme=()=>THEMES[themeKey()];
+const dayTint=()=>dayTheme().bg;
 // Draws the whole card at width W x height H. Layout is proportional, so preview and download match.
 function drawCard(ctx,W,H,img){
   const f=fmt();const [rw,rh]=f.img.split(":").map(Number);
   const s=W/1080, IH=Math.round(W*rh/rw);
-  ctx.fillStyle=dayTint(state.date);ctx.fillRect(0,0,W,H);
+  ctx.fillStyle=dayTint();ctx.fillRect(0,0,W,H);
   // illustration, cover-cropped into the top box
   if(img){
     const r=Math.max(W/img.naturalWidth,IH/img.naturalHeight),sw=W/r,sh=IH/r;
@@ -341,14 +361,14 @@ function drawCard(ctx,W,H,img){
     const rule=(w,color)=>{if(go){ctx.fillStyle=color;ctx.fillRect(W/2-w*k/2,y,w*k,Math.max(1,1.5*k))}};
     // header
     if(!skipTop){
-    const th=dayTheme(state.date);
+    const th=dayTheme();
     if(th.name){text(th.name.toUpperCase(),`500 ${24*k}px ${S}`,7,24,28,th.accent);y+=10*k}
     if(numTxt){text("MENÚ  Nº "+numTxt,`400 ${19*k}px ${S}`,6,19,26,"#8a8a8a");y+=14*k}
     text(fmtDate(state.date),`400 ${66*k}px ${F}`,0,66,64,"#111");
     y+=34*k;
     // dishes
     dishes.forEach((d,i)=>{
-      if(i>0){y+=6*k;text("+",`300 ${32*k}px ${S}`,0,32,32,dayTheme(state.date).accent);y+=4*k}
+      if(i>0){y+=6*k;text("+",`300 ${32*k}px ${S}`,0,32,32,dayTheme().accent);y+=4*k}
       if(d.es)text(d.es,`400 ${38*k}px ${F}`,0,38,46,"#111");
       if(d.en)text(d.en,`300 ${26*k}px ${S}`,1,26,34,"#5f5f5f");
     });
@@ -383,6 +403,10 @@ function renderCard(){
     if(c.width!==PW||c.height!==PH){c.width=PW;c.height=PH}
     drawCard(c.getContext("2d"),PW,PH,getImg(state.image));
   });
+  const th=THEMES[themeKey()];const autoKey=autoThemeKey(state.date);
+  $("themeHint").textContent=(!state.theme||state.theme==="auto")
+    ?(th.name?"Hoy: "+th.name+". Cambia el tema solo si este menú es distinto.":"Fin de semana: sin tema. Elige uno si hace falta.")
+    :(state.theme===autoKey?"Coincide con el día.":"Tema cambiado a mano para este menú. Los colores siguen al tema.");
   const stale=isStale();
   const note=$("staleNote");
   if(stale){note.hidden=false;note.textContent=(state.aspectUsed&&state.aspectUsed!==fmt().img)?"Formato cambiado: la ilustración se recorta. Crea una nueva para que encaje bien.":"Platos cambiados: la ilustración ya no coincide. Crea una nueva."}
