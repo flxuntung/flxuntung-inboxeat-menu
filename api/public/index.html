@@ -29,6 +29,36 @@ header .date{margin-left:auto;display:grid;gap:4px;min-width:170px}
 h2{font-weight:400;letter-spacing:.18em;text-transform:uppercase;font-size:13px;margin:0}
 .grid{display:grid;grid-template-columns:minmax(0,1fr) minmax(0,1fr);gap:32px;align-items:start}
 @media (max-width:840px){.grid{grid-template-columns:minmax(0,1fr)}}
+.mbar{display:none}
+@media (max-width:640px){
+  body{padding-top:16px;padding-bottom:calc(132px + env(safe-area-inset-bottom,0px))}
+  header{display:grid;grid-template-columns:auto 1fr;gap:6px 12px;padding-bottom:14px;margin-bottom:20px}
+  header img{width:38px}
+  .brand b{font-size:15px}
+  .brand span{font-size:10px;letter-spacing:.22em}
+  header .date{grid-column:1 / -1;margin-left:0;min-width:0;grid-template-columns:auto 1fr;align-items:center;gap:12px;margin-top:8px}
+  .grid{gap:28px}
+  .panel{gap:16px}
+  input,select,textarea{font-size:16px}
+  .dish{grid-template-columns:20px minmax(0,1fr) 30px;gap:8px;padding:8px 6px 8px 10px}
+  .dish .n{font-size:16px;line-height:38px}
+  .dish input.es{font-size:17px}
+  .dish input.en{font-size:16px}
+  .x{width:30px;height:38px}
+  select{width:100%}
+  #go,#dl,#dlIll{display:none}
+  #form .row:last-of-type .msg{display:none}
+  .actions{justify-content:flex-start}
+  #cartaSec .cardwrap{padding:0;background:none}
+  #cartaSec #cardCanvas{max-width:100%;box-shadow:0 0 0 1px var(--rule-soft)}
+  .mbar{display:grid;gap:8px;position:fixed;left:0;right:0;bottom:0;z-index:20;background:#fff;border-top:1.5px solid var(--rule);
+    padding:10px max(16px,env(safe-area-inset-right,0px)) calc(12px + env(safe-area-inset-bottom,0px)) max(16px,env(safe-area-inset-left,0px))}
+  .mbar[hidden]{display:none!important}
+  .mbar .msg{min-height:1.2em;font-size:12px;text-align:center}
+  .mrow{display:grid;grid-template-columns:1fr 1.6fr;gap:10px}
+  .mrow .btn{padding:14px 10px}
+  .progress{position:fixed;left:0;right:0;bottom:calc(118px + env(safe-area-inset-bottom,0px));z-index:21}
+}
 .panel{display:grid;gap:20px;min-width:0}
 .field{display:grid;gap:6px;min-width:0}
 input,textarea{font:inherit;font-weight:300;color:var(--ink);background:#fff;border:0;border-bottom:1.5px solid var(--rule-soft);border-radius:0;padding:9px 2px;width:100%;min-width:0}
@@ -142,7 +172,7 @@ textarea{min-height:130px;border:1.5px solid var(--rule-soft);padding:10px;resiz
       <div class="progress" id="prog" hidden><i></i></div>
     </form>
 
-    <section class="panel" aria-labelledby="ch">
+    <section class="panel" aria-labelledby="ch" id="cartaSec">
       <div class="actions">
         <h2 id="ch">Carta</h2>
         <div class="row">
@@ -156,6 +186,13 @@ textarea{min-height:130px;border:1.5px solid var(--rule-soft);padding:10px;resiz
   </div>
 </div>
 
+<div class="mbar" id="mbar" hidden>
+  <p class="msg" id="mMsg" role="status"></p>
+  <div class="mrow">
+    <button type="button" class="btn ghost" id="mView">Ver carta</button>
+    <button type="button" class="btn" id="mMain">Crear ilustración</button>
+  </div>
+</div>
 <script>
 const $=id=>document.getElementById(id);
 const pad=n=>String(n).padStart(2,"0");
@@ -174,7 +211,7 @@ const FORMATS={"4:5":{W:1080,H:1350,img:"16:9"},"9:16":{W:1080,H:1920,img:"4:3"}
 if(!FORMATS[state.aspect])state.aspect="4:5";
 const fmt=()=>FORMATS[state.aspect]||FORMATS["4:5"];
 const sig=d=>JSON.stringify(d.map(x=>(x.es||"").trim().toLowerCase()).filter(Boolean));
-function setMsg(id,t,kind){const m=$(id);m.textContent=t;m.className="msg"+(kind?" "+kind:"")}
+function setMsg(id,t,kind){const m=$(id);m.textContent=t;m.className="msg"+(kind?" "+kind:"");const mm=document.getElementById("mMsg");if(mm&&(id==="msg"||id==="dlMsg")){mm.textContent=t;mm.className="msg"+(kind?" "+kind:"")}}
 
 async function api(path,opts={}){
   const r=await fetch(path,{...opts,headers:{"Content-Type":"application/json","x-app-password":pw,...(opts.headers||{})}});
@@ -186,7 +223,7 @@ async function api(path,opts={}){
 
 /* ---------- gate ---------- */
 async function enter(){
-  try{await api("/api/check");$("gate").hidden=true;$("app").hidden=false;return true}
+  try{await api("/api/check");$("gate").hidden=true;$("app").hidden=false;$("mbar").hidden=false;syncBar();return true}
   catch(e){$("gate").hidden=false;$("app").hidden=true;if(pw)$("pwMsg").textContent=e.status===401?"Contraseña incorrecta.":e.message;return false}
 }
 $("gateForm").onsubmit=async e=>{e.preventDefault();pw=$("pw").value;$("pwBtn").disabled=true;$("pwMsg").textContent="";
@@ -313,6 +350,7 @@ function renderCard(){
   const stale=isStale();
   $("dlIll").disabled=!state.image;
   $("go").textContent=stale?"Crear ilustración nueva":"Crear ilustración";
+  syncBar();
 }
 try{document.fonts.load("400 40px 'Old Standard TT'").then(renderCard);document.fonts.ready.then(renderCard)}catch(e){}
 
@@ -322,7 +360,7 @@ $("form").addEventListener("submit",async e=>{
   e.preventDefault();if(running)return;
   const dishes=state.dishes.filter(d=>d.es.trim()||d.en.trim());
   if(!dishes.length){setMsg("msg","Añade al menos un plato.","err");return}
-  running=true;$("go").disabled=true;const prog=$("prog");prog.hidden=false;const bar=prog.firstElementChild;bar.style.width="4%";
+  running=true;$("go").disabled=true;syncBar();const prog=$("prog");prog.hidden=false;const bar=prog.firstElementChild;bar.style.width="4%";
   const t0=Date.now();const tick=setInterval(()=>{bar.style.width=Math.min(92,4+(Date.now()-t0)/900)+"%"},600);
   try{
     setMsg("msg","Traduciendo y enviando…");
@@ -348,11 +386,11 @@ $("form").addEventListener("submit",async e=>{
     }catch(x){console.warn("image proxy failed",x)}
     state.image=dataUrl;state.imageSig=sig(state.dishes);state.aspectUsed=fmt().img;
     renderCard();save();bar.style.width="100%";
-    setMsg("msg","Ilustración lista.","ok");
+    setMsg("msg","Ilustración lista.","ok");if(isPhone())$("cartaSec").scrollIntoView({behavior:"smooth",block:"start"});
   }catch(err){
     setMsg("msg",err.status===401?"Sesión caducada. Vuelve a entrar.":(err.message||"No se pudo crear la ilustración."),"err");
     if(err.status===401){try{localStorage.removeItem(PWKEY)}catch(x){}pw="";enter()}
-  }finally{clearInterval(tick);running=false;$("go").disabled=false;setTimeout(()=>{prog.hidden=true;bar.style.width="0"},800)}
+  }finally{clearInterval(tick);running=false;$("go").disabled=false;syncBar();setTimeout(()=>{prog.hidden=true;bar.style.width="0"},800)}
 });
 
 /* ---------- download ---------- */
@@ -365,7 +403,30 @@ async function renderPNG(){
   return new Promise(res=>c.toBlob(res,"image/png"));
 }
 function download(blob,name){const a=document.createElement("a");a.href=URL.createObjectURL(blob);a.download=name;document.body.appendChild(a);a.click();setTimeout(()=>{URL.revokeObjectURL(a.href);a.remove()},2000)}
-$("dl").onclick=async()=>{setMsg("dlMsg","Preparando…");try{download(await renderPNG(),"menu-"+state.date+"-"+state.aspect.replace(":","x")+".png");setMsg("dlMsg","Carta descargada.","ok")}catch(e){setMsg("dlMsg","No se pudo crear la imagen.","err")}};
+const isPhone=()=>matchMedia("(max-width:640px)").matches;
+async function saveCard(){
+  setMsg("dlMsg","Preparando…");
+  try{
+    const blob=await renderPNG();const name="menu-"+state.date+"-"+state.aspect.replace(":","x")+".png";
+    const file=new File([blob],name,{type:"image/png"});
+    if(isPhone()&&navigator.canShare&&navigator.canShare({files:[file]})){
+      try{await navigator.share({files:[file],title:"Menú del día"});setMsg("dlMsg","Listo.","ok");return}
+      catch(e){if(e&&e.name==="AbortError"){setMsg("dlMsg","");return}}
+    }
+    download(blob,name);setMsg("dlMsg","Carta descargada.","ok");
+  }catch(e){setMsg("dlMsg","No se pudo crear la imagen.","err")}
+}
+$("dl").onclick=saveCard;
+/* mobile bar: main action is "create" until an up-to-date image exists, then "save/share" */
+function syncBar(){
+  const ready=!!state.image&&!isStale();
+  $("mMain").textContent=running?"Creando…":ready?"Guardar / compartir":($("go").textContent);
+  $("mMain").disabled=running;
+}
+$("mMain").onclick=()=>{if(!!state.image&&!isStale())saveCard();else $("form").requestSubmit()};
+$("mView").onclick=()=>{const sec=$("cartaSec");const r=sec.getBoundingClientRect();
+  if(r.top<80&&r.bottom>0)window.scrollTo({top:0,behavior:"smooth"});else sec.scrollIntoView({behavior:"smooth",block:"start"})};
+window.addEventListener("scroll",()=>{const r=$("cartaSec").getBoundingClientRect();$("mView").textContent=(r.top<120)?"Editar menú":"Ver carta"},{passive:true});
 $("dlIll").onclick=async()=>{if(!state.image)return;const b=await (await fetch(state.image)).blob();download(b,"ilustracion-"+state.date+".png")};
 
 /* ---------- boot ---------- */
