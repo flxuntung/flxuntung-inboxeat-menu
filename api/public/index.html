@@ -411,9 +411,6 @@ function drawCard(ctx,W,H,img,textOnly){
     ctx.fillStyle="#8a8a8a";ctx.textAlign="center";ctx.font=`300 ${30*s}px Jost, Arial, sans-serif`;
     ctx.fillText("La ilustración aparece aquí",W/2,IH/2);
   }
-  // themed rubber stamp: overlaps the lower edge of the illustration (or sits top right on the menu-only card)
-  {const D=(textOnly?200:220)*s, cx=W-D/2-30*s, cy=textOnly?D/2+30*s:IH+D/2+26*s;
-   drawStamp(ctx,themeKey(),cx,cy,D,dayTheme(),s);}
   // text block: editorial hierarchy (serif for dishes and prices, spaced sans for labels), scaled to fit below the image
   const S="Jost, 'Helvetica Neue', Arial, sans-serif";
   const isA4=state.aspect==="A4";
