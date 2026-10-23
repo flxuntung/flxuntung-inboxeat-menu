@@ -61,21 +61,9 @@ textarea{min-height:130px;border:1.5px solid var(--rule-soft);padding:10px;resiz
 .progress i{position:absolute;left:0;top:0;bottom:0;width:0;background:var(--ink);transition:width .6s linear}
 .progress[hidden]{display:none}
 
-/* the printed card */
-.card{background:#fff;color:#111;border:2px solid #111;padding:26px 24px 30px;display:grid;gap:14px;text-align:center;font-family:var(--serif);font-weight:400}
-.card .logo{width:86px;height:auto;justify-self:center}
-.ill{aspect-ratio:3/2;width:100%;background:var(--wash);display:grid;place-items:center;overflow:hidden;position:relative}
-.ill.has-img{aspect-ratio:auto!important;background:none}
-.ill img{width:100%;height:auto;display:block}
-.ill p{font-family:var(--sans);font-weight:300;font-size:13px;color:var(--ink-soft);margin:0;padding:16px;max-width:30ch;letter-spacing:.04em}
-.c-date{font-size:clamp(26px,4vw,34px);margin-top:4px}
-.c-num{font-size:16px}
-.c-courses{display:grid;gap:6px;font-size:16px;line-height:1.45}
-.c-plus{color:#8a8a8a;font-size:20px;line-height:1}
-.c-prices{display:grid;grid-template-columns:repeat(3,minmax(0,1fr));gap:8px;font-size:15px;margin-top:6px}
-.c-prices>div:nth-child(2){margin-top:8px}
-.c-prices b{display:block;font-weight:400;font-size:19px;font-variant-numeric:tabular-nums}
-.c-foot{color:#8a8a8a;font-size:15px}
+/* the printed card: rendered on a canvas so preview and download are identical */
+.cardwrap{background:var(--wash);padding:14px;display:grid;place-items:center}
+#cardCanvas{display:block;width:100%;max-width:520px;height:auto;background:#fff;box-shadow:0 0 0 1px var(--rule-soft)}
 .actions{display:flex;flex-wrap:wrap;gap:12px;justify-content:space-between;align-items:center}
 
 /* password gate */
@@ -137,12 +125,13 @@ textarea{min-height:130px;border:1.5px solid var(--rule-soft);padding:10px;resiz
       </details>
 
       <div class="field">
-        <label class="label" for="aspect">Formato de la ilustración</label>
+        <label class="label" for="aspect">Formato de la carta</label>
         <select id="aspect">
-          <option value="3:2">3:2 horizontal</option>
-          <option value="1:1">1:1 cuadrado</option>
-          <option value="4:5">4:5 vertical</option>
+          <option value="4:5">Instagram post · 4:5 (1080 × 1350)</option>
+          <option value="9:16">Story / WhatsApp · 9:16 (1080 × 1920)</option>
+          <option value="A4">A4 para imprimir (2480 × 3508)</option>
         </select>
+        <p class="hint">La ilustración se crea a la medida del formato. Si cambias el formato, crea una ilustración nueva.</p>
       </div>
 
       <div class="row">
@@ -160,15 +149,7 @@ textarea{min-height:130px;border:1.5px solid var(--rule-soft);padding:10px;resiz
           <button type="button" class="btn" id="dl">Descargar carta</button>
         </div>
       </div>
-      <div class="card" id="card">
-        <img class="logo" src="logo.png" alt="Inboxeat Encaja">
-        <div class="ill" id="ill"><p>La ilustración aparece aquí. Tarda alrededor de un minuto.</p></div>
-        <div class="c-date" id="cDate"></div>
-        <div class="c-num" id="cNum"></div>
-        <div class="c-courses" id="cCourses"></div>
-        <div class="c-prices" id="cPrices"></div>
-        <div class="c-foot" id="cFoot"></div>
-      </div>
+      <div class="cardwrap"><canvas id="cardCanvas" aria-label="Vista previa de la carta"></canvas></div>
       <p class="msg" id="dlMsg" role="status"></p>
     </section>
   </div>
@@ -183,11 +164,14 @@ const PRICES=[{amount:"11,00 €",label:"Tus tuppers"},{amount:"13,00 €",label
 const FOOT="Plz. Coll 13:00-15:00";
 const KEY="inboxeat-menu-v1", PWKEY="inboxeat-pw";
 
-let state={date:todayISO(),num:"",dishes:[{es:"",en:"",auto:true}],aspect:"3:2",image:null,imageSig:""};
+let state={date:todayISO(),num:"",dishes:[{es:"",en:"",auto:true}],aspect:"4:5",image:null,imageSig:""};
 let pw="";
 try{pw=localStorage.getItem(PWKEY)||""}catch(e){}
 try{const s=JSON.parse(localStorage.getItem(KEY)||"null");if(s&&s.dishes)state={...state,...s}}catch(e){}
 const save=()=>{try{localStorage.setItem(KEY,JSON.stringify(state))}catch(e){}};
+const FORMATS={"4:5":{W:1080,H:1350,img:"16:9"},"9:16":{W:1080,H:1920,img:"4:3"},"A4":{W:2480,H:3508,img:"3:2"}};
+if(!FORMATS[state.aspect])state.aspect="4:5";
+const fmt=()=>FORMATS[state.aspect]||FORMATS["4:5"];
 const sig=d=>JSON.stringify(d.map(x=>(x.es||"").trim().toLowerCase()).filter(Boolean));
 function setMsg(id,t,kind){const m=$(id);m.textContent=t;m.className="msg"+(kind?" "+kind:"")}
 
@@ -254,27 +238,66 @@ $("parse").onclick=()=>{
 };
 
 /* ---------- card ---------- */
+const F="'Old Standard TT', Georgia, serif";
+const imgCache={};
+function getImg(src){
+  if(!src)return null;
+  if(imgCache[src])return imgCache[src].ready?imgCache[src].el:null;
+  const el=new Image();imgCache[src]={el,ready:false};
+  el.onload=()=>{imgCache[src].ready=true;renderCard()};el.src=src;return null;
+}
+function wrap(ctx,text,max){const words=String(text).split(/\s+/);const lines=[];let cur="";
+  for(const w of words){const t=cur?cur+" "+w:w;if(ctx.measureText(t).width>max&&cur){lines.push(cur);cur=w}else cur=t}if(cur)lines.push(cur);return lines}
+const isStale=()=>!!state.image&&(state.imageSig!==sig(state.dishes)||(state.aspectUsed&&state.aspectUsed!==fmt().img));
+
+// Draws the whole card at width W x height H. Layout is proportional, so preview and download match.
+function drawCard(ctx,W,H,img){
+  const f=fmt();const [rw,rh]=f.img.split(":").map(Number);
+  const s=W/1080, IH=Math.round(W*rh/rw);
+  ctx.fillStyle="#fff";ctx.fillRect(0,0,W,H);
+  // illustration, cover-cropped into the top box
+  if(img){
+    const r=Math.max(W/img.naturalWidth,IH/img.naturalHeight),sw=W/r,sh=IH/r;
+    ctx.drawImage(img,(img.naturalWidth-sw)/2,(img.naturalHeight-sh)/2,sw,sh,0,0,W,IH);
+    if(isStale()){ctx.fillStyle="rgba(255,255,255,.55)";ctx.fillRect(0,0,W,IH)}
+  }else{
+    ctx.fillStyle="#f4f4f2";ctx.fillRect(0,0,W,IH);
+    ctx.fillStyle="#8a8a8a";ctx.textAlign="center";ctx.font=`300 ${30*s}px Jost, Arial, sans-serif`;
+    ctx.fillText("La ilustración aparece aquí",W/2,IH/2);
+  }
+  // text block, scaled to fit the space below the image
+  const pad=56*s, top=IH+pad, avail=H-IH-2*pad, maxW=W-2*pad*1.4;
+  const dishes=state.dishes.filter(x=>x.es||x.en);
+  function layout(k,go,y0){
+    let y=y0;ctx.textAlign="center";
+    const line=(t,size,lh,color)=>{ctx.font=`400 ${size*k}px ${F}`;for(const l of wrap(ctx,t,maxW)){y+=lh*k;if(go){ctx.fillStyle=color||"#111";ctx.fillText(l,W/2,y)}}};
+    line(fmtDate(state.date),62,64);
+    if(state.num){y+=6*k;line(state.num,30,40)}
+    y+=22*k;
+    dishes.forEach((d,i)=>{if(i>0){line("+",34,40,"#8a8a8a")}if(d.es)line(d.es,34,42);if(d.en)line(d.en,30,38,"#333")});
+    y+=34*k;const cw=(W-2*pad)/3;
+    PRICES.forEach((p,i)=>{const x=pad+cw*i+cw/2,off=(i===1?10:0)*k;if(go){ctx.fillStyle="#111";ctx.font=`400 ${38*k}px ${F}`;ctx.fillText(p.amount,x,y+40*k+off);ctx.font=`400 ${30*k}px ${F}`;ctx.fillText(p.label,x,y+80*k+off)}});
+    y+=96*k;y+=18*k;line(FOOT,28,38,"#8a8a8a");
+    return y-y0;
+  }
+  const need=layout(s,false,0);
+  const k=s*Math.min(1.25,avail/need);
+  const h=layout(k,false,0);
+  layout(k,true,top+Math.max(0,(avail-h)/2));
+}
+let rq=0;
 function renderCard(){
-  $("cDate").textContent=fmtDate(state.date);$("cNum").textContent=state.num;
-  const cc=$("cCourses");cc.innerHTML="";
-  state.dishes.filter(d=>d.es||d.en).forEach((d,i)=>{
-    if(i>0){const p=document.createElement("div");p.className="c-plus";p.textContent="+";cc.appendChild(p)}
-    const w=document.createElement("div");const a=document.createElement("div");a.textContent=d.es;w.appendChild(a);
-    if(d.en){const b=document.createElement("div");b.textContent=d.en;w.appendChild(b)}cc.appendChild(w);
+  cancelAnimationFrame(rq);
+  rq=requestAnimationFrame(()=>{
+    const f=fmt(),c=$("cardCanvas"),PW=900,PH=Math.round(PW*f.H/f.W);
+    if(c.width!==PW||c.height!==PH){c.width=PW;c.height=PH}
+    drawCard(c.getContext("2d"),PW,PH,getImg(state.image));
   });
-  const cp=$("cPrices");cp.innerHTML="";
-  PRICES.forEach(p=>{const d=document.createElement("div");const b=document.createElement("b");b.textContent=p.amount;d.append(b,document.createTextNode(p.label));cp.appendChild(d)});
-  $("cFoot").textContent=FOOT;
-  const ill=$("ill");const stale=state.image&&(state.imageSig!==sig(state.dishes)||(state.aspectUsed&&state.aspectUsed!==state.aspect));
-  ill.style.aspectRatio=(state.aspect||"3:2").replace(":"," / ");ill.classList.toggle("has-img",!!state.image);
-  if(state.image){
-    let img=ill.querySelector("img");
-    if(!img||img.getAttribute("src")!==state.image){ill.innerHTML="";img=document.createElement("img");img.alt="Ilustración del menú";img.src=state.image;ill.appendChild(img)}
-    ill.style.opacity=stale?".45":"1";
-  }else{ill.innerHTML="";const p=document.createElement("p");p.textContent="La ilustración aparece aquí. Tarda alrededor de un minuto.";ill.appendChild(p);ill.style.opacity="1"}
+  const stale=isStale();
   $("dlIll").disabled=!state.image;
   $("go").textContent=stale?"Crear ilustración nueva":"Crear ilustración";
 }
+try{document.fonts.load("400 40px 'Old Standard TT'").then(renderCard);document.fonts.ready.then(renderCard)}catch(e){}
 
 /* ---------- generate ---------- */
 let running=false;
@@ -286,7 +309,7 @@ $("form").addEventListener("submit",async e=>{
   const t0=Date.now();const tick=setInterval(()=>{bar.style.width=Math.min(92,4+(Date.now()-t0)/900)+"%"},600);
   try{
     setMsg("msg","Traduciendo y enviando…");
-    const start=await api("/api/generate",{method:"POST",body:JSON.stringify({dishes:dishes.map(d=>({es:d.es,en:d.en})),aspect:state.aspect})});
+    const start=await api("/api/generate",{method:"POST",body:JSON.stringify({dishes:dishes.map(d=>({es:d.es,en:d.en})),aspect:fmt().img})});
     start.dishes.forEach((d,i)=>{const s=state.dishes.find(x=>x.es.trim()===d.es)||state.dishes[i];if(s&&!s.en){s.en=d.en;s.auto=true}});
     renderDishes();renderCard();save();
     setMsg("msg","Creando la ilustración…");
@@ -306,7 +329,7 @@ $("form").addEventListener("submit",async e=>{
       const blob=await r.blob();
       dataUrl=await new Promise(res=>{const fr=new FileReader();fr.onload=()=>res(fr.result);fr.readAsDataURL(blob)});
     }catch(x){console.warn("image proxy failed",x)}
-    state.image=dataUrl;state.imageSig=sig(state.dishes);state.aspectUsed=state.aspect;
+    state.image=dataUrl;state.imageSig=sig(state.dishes);state.aspectUsed=fmt().img;
     renderCard();save();bar.style.width="100%";
     setMsg("msg","Ilustración lista.","ok");
   }catch(err){
@@ -316,38 +339,16 @@ $("form").addEventListener("submit",async e=>{
 });
 
 /* ---------- download ---------- */
-function wrap(ctx,text,max){const words=String(text).split(/\s+/);const lines=[];let cur="";
-  for(const w of words){const t=cur?cur+" "+w:w;if(ctx.measureText(t).width>max&&cur){lines.push(cur);cur=w}else cur=t}if(cur)lines.push(cur);return lines}
 async function loadImg(src){const im=new Image();im.src=src;await im.decode();return im}
 async function renderPNG(){
-  const W=1080,P=72,IW=W-2*P;const F="'Old Standard TT', Georgia, serif";
   try{await Promise.all([document.fonts.load("400 40px 'Old Standard TT'"),document.fonts.ready])}catch(e){}
-  const logo=await loadImg("logo.png").catch(()=>null);
   const img=state.image?await loadImg(state.image).catch(()=>null):null;
-  const ratio=img?img.naturalWidth/img.naturalHeight:1.5;const IH=Math.round(IW/ratio);
-  const c=document.createElement("canvas");const ctx=c.getContext("2d");
-  const dishes=state.dishes.filter(x=>x.es||x.en);
-  function draw(go){
-    let y=P;
-    if(go){ctx.fillStyle="#fff";ctx.fillRect(0,0,c.width,c.height);ctx.strokeStyle="#111";ctx.lineWidth=3;ctx.strokeRect(28,28,c.width-56,c.height-56)}
-    if(logo){const lw=150,lh=Math.round(lw*logo.naturalHeight/logo.naturalWidth);if(go)ctx.drawImage(logo,(W-lw)/2,y,lw,lh);y+=lh+40}
-    if(img){if(go)ctx.drawImage(img,P,y,IW,IH);y+=IH+40}
-    ctx.textAlign="center";
-    const line=(t,size,lh,color)=>{ctx.font=`400 ${size}px ${F}`;for(const l of wrap(ctx,t,IW)){y+=lh;if(go){ctx.fillStyle=color||"#111";ctx.fillText(l,W/2,y)}}};
-    line(fmtDate(state.date),60,70);
-    if(state.num){y+=14;line(state.num,32,40)}
-    y+=24;
-    dishes.forEach((d,i)=>{if(i>0){y+=8;line("+",40,40,"#8a8a8a");y+=4}if(d.es)line(d.es,34,44);if(d.en)line(d.en,34,44)});
-    y+=40;const cw=IW/3;
-    PRICES.forEach((p,i)=>{const x=P+cw*i+cw/2,off=i===1?12:0;if(go){ctx.fillStyle="#111";ctx.font=`400 40px ${F}`;ctx.fillText(p.amount,x,y+42+off);ctx.font=`400 32px ${F}`;ctx.fillText(p.label,x,y+86+off)}});
-    y+=110;y+=24;line(FOOT,30,44,"#8a8a8a");
-    return y+P;
-  }
-  c.width=W;c.height=3000;const H=draw(false);c.height=Math.max(H,W);draw(true);
+  const f=fmt(),c=document.createElement("canvas");c.width=f.W;c.height=f.H;
+  drawCard(c.getContext("2d"),f.W,f.H,img);
   return new Promise(res=>c.toBlob(res,"image/png"));
 }
 function download(blob,name){const a=document.createElement("a");a.href=URL.createObjectURL(blob);a.download=name;document.body.appendChild(a);a.click();setTimeout(()=>{URL.revokeObjectURL(a.href);a.remove()},2000)}
-$("dl").onclick=async()=>{setMsg("dlMsg","Preparando…");try{download(await renderPNG(),"menu-"+state.date+".png");setMsg("dlMsg","Carta descargada.","ok")}catch(e){setMsg("dlMsg","No se pudo crear la imagen.","err")}};
+$("dl").onclick=async()=>{setMsg("dlMsg","Preparando…");try{download(await renderPNG(),"menu-"+state.date+"-"+state.aspect.replace(":","x")+".png");setMsg("dlMsg","Carta descargada.","ok")}catch(e){setMsg("dlMsg","No se pudo crear la imagen.","err")}};
 $("dlIll").onclick=async()=>{if(!state.image)return;const b=await (await fetch(state.image)).blob();download(b,"ilustracion-"+state.date+".png")};
 
 /* ---------- boot ---------- */
