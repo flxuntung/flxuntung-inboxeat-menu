@@ -1,0 +1,353 @@
+<!doctype html>
+<html lang="es">
+<head>
+<meta charset="utf-8">
+<meta name="viewport" content="width=device-width, initial-scale=1, viewport-fit=cover">
+<title>Menú del día · Inboxeat</title>
+<link rel="icon" href="logo.png">
+<link rel="preconnect" href="https://fonts.googleapis.com">
+<link rel="stylesheet" href="https://fonts.googleapis.com/css2?family=Jost:wght@300;400;500&family=Old+Standard+TT:wght@400;700&display=swap">
+<style>
+/* Inboxeat: black line art on white. Thin rules, geometric sans, wide tracking. The menu card keeps the printed serif. */
+:root{
+  --bg:#ffffff; --ink:#111111; --ink-soft:#6b6b6b; --rule:#111111; --rule-soft:#d6d6d6; --wash:#f4f4f2;
+  --ok:#2f6b3a; --err:#a3412f;
+  --sans:"Jost", "Helvetica Neue", Arial, sans-serif;
+  --serif:"Old Standard TT", Georgia, "Times New Roman", serif;
+}
+*{box-sizing:border-box}
+html,body{margin:0;background:var(--bg);color:var(--ink);font-family:var(--sans);font-weight:300;font-size:15px;line-height:1.5}
+body{padding:28px max(16px,env(safe-area-inset-left,0px)) 56px max(16px,env(safe-area-inset-right,0px))}
+.wrap{max-width:1100px;margin:0 auto}
+header{display:flex;align-items:center;gap:18px;padding-bottom:22px;border-bottom:1.5px solid var(--rule);margin-bottom:28px}
+header img{width:52px;height:auto}
+.brand{display:grid;gap:2px}
+.brand b{font-weight:400;letter-spacing:.22em;font-size:17px}
+.brand span{letter-spacing:.3em;font-size:11px;color:var(--ink-soft);text-transform:uppercase}
+header .date{margin-left:auto;display:grid;gap:4px;min-width:170px}
+.label{font-size:11px;letter-spacing:.22em;text-transform:uppercase;color:var(--ink-soft);font-weight:400}
+h2{font-weight:400;letter-spacing:.18em;text-transform:uppercase;font-size:13px;margin:0}
+.grid{display:grid;grid-template-columns:minmax(0,1fr) minmax(0,1fr);gap:32px;align-items:start}
+@media (max-width:840px){.grid{grid-template-columns:minmax(0,1fr)}}
+.panel{display:grid;gap:20px;min-width:0}
+.field{display:grid;gap:6px;min-width:0}
+input,textarea{font:inherit;font-weight:300;color:var(--ink);background:#fff;border:0;border-bottom:1.5px solid var(--rule-soft);border-radius:0;padding:9px 2px;width:100%;min-width:0}
+input:focus,textarea:focus{outline:none;border-bottom-color:var(--ink)}
+button:focus-visible,select:focus-visible{outline:1.5px solid var(--ink);outline-offset:3px}
+select{font:inherit;font-weight:300;color:var(--ink);background:#fff;border:1.5px solid var(--rule);border-radius:0;padding:8px 10px}
+button{font:inherit;cursor:pointer;border-radius:0;letter-spacing:.14em;text-transform:uppercase;font-size:12px;font-weight:400}
+button:disabled{opacity:.4;cursor:default}
+.btn{background:var(--ink);color:#fff;border:1.5px solid var(--ink);padding:13px 22px}
+.btn.ghost{background:#fff;color:var(--ink)}
+.btn.ghost:hover{background:var(--wash)}
+.link{background:none;border:0;padding:0;color:var(--ink-soft);text-decoration:underline;text-underline-offset:3px;letter-spacing:.08em}
+.row{display:flex;flex-wrap:wrap;gap:12px;align-items:center}
+.dishes{display:grid;gap:10px}
+.dish{display:grid;grid-template-columns:28px minmax(0,1fr) 34px;gap:10px;align-items:start;border:1.5px solid var(--rule);padding:12px 12px 12px 14px}
+.dish .n{font-family:var(--serif);font-size:18px;line-height:40px;color:var(--ink-soft)}
+.dish .pair{display:grid;gap:2px;min-width:0}
+.dish input.es{font-family:var(--serif);font-size:18px;padding:6px 2px}
+.dish input.en{font-size:13px;color:var(--ink-soft);padding:5px 2px}
+.x{width:34px;height:40px;border:0;background:none;color:var(--ink-soft);font-size:20px;letter-spacing:0}
+.x:hover{color:var(--ink)}
+details{border-top:1.5px solid var(--rule-soft);padding-top:12px}
+summary{cursor:pointer;color:var(--ink-soft);letter-spacing:.08em;font-size:13px}
+details[open] summary{margin-bottom:10px}
+textarea{min-height:130px;border:1.5px solid var(--rule-soft);padding:10px;resize:vertical}
+.hint{font-size:13px;color:var(--ink-soft);margin:0}
+.msg{font-size:13px;min-height:1.4em;margin:0;letter-spacing:.02em}
+.msg.ok{color:var(--ok)} .msg.err{color:var(--err)}
+.progress{height:1.5px;background:var(--rule-soft);position:relative;overflow:hidden}
+.progress i{position:absolute;left:0;top:0;bottom:0;width:0;background:var(--ink);transition:width .6s linear}
+.progress[hidden]{display:none}
+
+/* the printed card */
+.card{background:#fff;color:#111;border:2px solid #111;padding:26px 24px 30px;display:grid;gap:14px;text-align:center;font-family:var(--serif);font-weight:400}
+.card .logo{width:86px;height:auto;justify-self:center}
+.ill{aspect-ratio:3/2;width:100%;background:var(--wash);display:grid;place-items:center;overflow:hidden;position:relative}
+.ill img{width:100%;height:100%;object-fit:cover;display:block}
+.ill p{font-family:var(--sans);font-weight:300;font-size:13px;color:var(--ink-soft);margin:0;padding:16px;max-width:30ch;letter-spacing:.04em}
+.c-date{font-size:clamp(26px,4vw,34px);margin-top:4px}
+.c-num{font-size:16px}
+.c-courses{display:grid;gap:6px;font-size:16px;line-height:1.45}
+.c-plus{color:#8a8a8a;font-size:20px;line-height:1}
+.c-prices{display:grid;grid-template-columns:repeat(3,minmax(0,1fr));gap:8px;font-size:15px;margin-top:6px}
+.c-prices>div:nth-child(2){margin-top:8px}
+.c-prices b{display:block;font-weight:400;font-size:19px;font-variant-numeric:tabular-nums}
+.c-foot{color:#8a8a8a;font-size:15px}
+.actions{display:flex;flex-wrap:wrap;gap:12px;justify-content:space-between;align-items:center}
+
+/* password gate */
+.gate{max-width:380px;margin:12vh auto 0;display:grid;gap:22px;text-align:center}
+.gate img{width:120px;justify-self:center}
+.gate form{display:grid;gap:14px}
+[hidden]{display:none!important}
+@media (prefers-reduced-motion:reduce){*{transition:none!important}}
+</style>
+</head>
+<body>
+
+<section class="gate" id="gate" hidden>
+  <img src="logo.png" alt="Inboxeat Encaja">
+  <p class="label">Menú del día</p>
+  <form id="gateForm">
+    <input type="password" id="pw" placeholder="Contraseña" autocomplete="current-password" aria-label="Contraseña">
+    <button type="submit" class="btn" id="pwBtn">Entrar</button>
+    <p class="msg err" id="pwMsg"></p>
+  </form>
+</section>
+
+<div class="wrap" id="app" hidden>
+  <header>
+    <img src="logo.png" alt="">
+    <div class="brand"><b>INBOXEAT</b><span>Encaja · Menú del día</span></div>
+    <div class="date">
+      <label class="label" for="date">Día</label>
+      <input type="date" id="date">
+    </div>
+  </header>
+
+  <div class="grid">
+    <form class="panel" id="form">
+      <div class="row" style="justify-content:space-between">
+        <h2>Menú</h2>
+        <button type="button" class="link" id="newMenu">Nuevo menú</button>
+      </div>
+
+      <div class="field" style="max-width:140px">
+        <label class="label" for="num">Número</label>
+        <input id="num" placeholder="#611">
+      </div>
+
+      <div class="field">
+        <span class="label">Platos</span>
+        <div class="dishes" id="dishes"></div>
+        <div class="row"><button type="button" class="link" id="add">+ Añadir plato</button></div>
+        <p class="hint">Escribe en español. El inglés se traduce al crear la ilustración y se puede corregir.</p>
+      </div>
+
+      <details id="pasteBox">
+        <summary>Pegar el menú completo</summary>
+        <div class="field">
+          <textarea id="paste" aria-label="Texto del menú" placeholder="Consomex&#10;+&#10;Boniatos fritos con salsa&#10;+&#10;Torta de quesabirria&#10;+&#10;Postre de mango"></textarea>
+          <button type="button" class="btn ghost" id="parse">Rellenar desde el texto</button>
+          <p class="hint">Un plato por línea o separados por "+". Fecha, precios y horario se ignoran.</p>
+        </div>
+      </details>
+
+      <div class="field">
+        <label class="label" for="aspect">Formato de la ilustración</label>
+        <select id="aspect">
+          <option value="3:2">3:2 horizontal</option>
+          <option value="1:1">1:1 cuadrado</option>
+          <option value="4:5">4:5 vertical</option>
+        </select>
+      </div>
+
+      <div class="row">
+        <button type="submit" class="btn" id="go">Crear ilustración</button>
+        <p class="msg" id="msg" role="status"></p>
+      </div>
+      <div class="progress" id="prog" hidden><i></i></div>
+    </form>
+
+    <section class="panel" aria-labelledby="ch">
+      <div class="actions">
+        <h2 id="ch">Carta</h2>
+        <div class="row">
+          <button type="button" class="link" id="dlIll" disabled>Solo ilustración</button>
+          <button type="button" class="btn" id="dl">Descargar carta</button>
+        </div>
+      </div>
+      <div class="card" id="card">
+        <img class="logo" src="logo.png" alt="Inboxeat Encaja">
+        <div class="ill" id="ill"><p>La ilustración aparece aquí. Tarda alrededor de un minuto.</p></div>
+        <div class="c-date" id="cDate"></div>
+        <div class="c-num" id="cNum"></div>
+        <div class="c-courses" id="cCourses"></div>
+        <div class="c-prices" id="cPrices"></div>
+        <div class="c-foot" id="cFoot"></div>
+      </div>
+      <p class="msg" id="dlMsg" role="status"></p>
+    </section>
+  </div>
+</div>
+
+<script>
+const $=id=>document.getElementById(id);
+const pad=n=>String(n).padStart(2,"0");
+const todayISO=()=>{const d=new Date();return d.getFullYear()+"-"+pad(d.getMonth()+1)+"-"+pad(d.getDate())};
+const fmtDate=iso=>{try{return new Intl.DateTimeFormat("es-ES",{day:"numeric",month:"long",timeZone:"UTC"}).format(new Date(iso+"T00:00:00Z"))}catch(e){return iso}};
+const PRICES=[{amount:"11,00 €",label:"Tus tuppers"},{amount:"13,00 €",label:"Los mios"},{amount:"12,00 €",label:"En barra"}];
+const FOOT="Plz. Coll 13:00-15:00";
+const KEY="inboxeat-menu-v1", PWKEY="inboxeat-pw";
+
+let state={date:todayISO(),num:"",dishes:[{es:"",en:"",auto:true}],aspect:"3:2",image:null,imageSig:""};
+let pw="";
+try{pw=localStorage.getItem(PWKEY)||""}catch(e){}
+try{const s=JSON.parse(localStorage.getItem(KEY)||"null");if(s&&s.dishes)state={...state,...s}}catch(e){}
+const save=()=>{try{localStorage.setItem(KEY,JSON.stringify(state))}catch(e){}};
+const sig=d=>JSON.stringify(d.map(x=>(x.es||"").trim().toLowerCase()).filter(Boolean));
+function setMsg(id,t,kind){const m=$(id);m.textContent=t;m.className="msg"+(kind?" "+kind:"")}
+
+async function api(path,opts={}){
+  const r=await fetch(path,{...opts,headers:{"Content-Type":"application/json","x-app-password":pw,...(opts.headers||{})}});
+  const ct=r.headers.get("content-type")||"";
+  if(ct.includes("application/json")){const d=await r.json();if(!r.ok)throw Object.assign(new Error(d.error||r.statusText),{status:r.status});return d}
+  if(!r.ok)throw Object.assign(new Error("Error "+r.status),{status:r.status});
+  return r;
+}
+
+/* ---------- gate ---------- */
+async function enter(){
+  try{await api("/api/check");$("gate").hidden=true;$("app").hidden=false;return true}
+  catch(e){$("gate").hidden=false;$("app").hidden=true;if(pw)$("pwMsg").textContent=e.status===401?"Contraseña incorrecta.":e.message;return false}
+}
+$("gateForm").onsubmit=async e=>{e.preventDefault();pw=$("pw").value;$("pwBtn").disabled=true;$("pwMsg").textContent="";
+  if(await enter()){try{localStorage.setItem(PWKEY,pw)}catch(x){}}$("pwBtn").disabled=false};
+
+/* ---------- form ---------- */
+function renderDishes(){
+  const box=$("dishes");box.innerHTML="";
+  state.dishes.forEach((d,i)=>{
+    const row=document.createElement("div");row.className="dish";
+    const n=document.createElement("div");n.className="n";n.textContent=i+1;
+    const pair=document.createElement("div");pair.className="pair";
+    const es=document.createElement("input");es.className="es";es.id="es-"+i;es.value=d.es;es.placeholder="Plato";es.setAttribute("aria-label","Plato "+(i+1));
+    const en=document.createElement("input");en.className="en";en.id="en-"+i;en.value=d.en;en.placeholder="English (automático)";en.setAttribute("aria-label","Plato "+(i+1)+" en inglés");
+    es.oninput=()=>{d.es=es.value;if(d.auto){d.en="";en.value=""}renderCard();save()};
+    en.oninput=()=>{d.en=en.value;d.auto=!en.value;renderCard();save()};
+    pair.append(es,en);
+    const x=document.createElement("button");x.type="button";x.className="x";x.textContent="×";x.setAttribute("aria-label","Quitar plato "+(i+1));
+    x.disabled=state.dishes.length<=1;x.onclick=()=>{state.dishes.splice(i,1);renderDishes();renderCard();save()};
+    row.append(n,pair,x);box.appendChild(row);
+  });
+  $("add").disabled=state.dishes.length>=6;
+}
+function fillForm(){$("date").value=state.date;$("num").value=state.num;$("aspect").value=state.aspect;renderDishes();renderCard()}
+$("date").onchange=e=>{if(e.target.value){state.date=e.target.value;renderCard();save()}};
+$("num").oninput=e=>{state.num=e.target.value;renderCard();save()};
+$("aspect").onchange=e=>{state.aspect=e.target.value;save()};
+$("add").onclick=()=>{state.dishes.push({es:"",en:"",auto:true});renderDishes();save();$("es-"+(state.dishes.length-1)).focus()};
+$("newMenu").onclick=()=>{
+  const n=parseInt(String(state.num||"").replace(/\D/g,""),10);
+  state={...state,date:todayISO(),num:n?"#"+(n+1):"",dishes:[{es:"",en:"",auto:true}],image:null,imageSig:""};
+  fillForm();save();setMsg("msg","");$("es-0").focus();
+};
+$("parse").onclick=()=>{
+  const lines=$("paste").value.split(/\n/).map(l=>l.trim()).filter(Boolean);
+  let num="";const blocks=[[]];
+  for(const l of lines){
+    if(/^\d{1,2}\s+de\s+\p{L}+$/iu.test(l))continue;
+    if(/^#\s*\d+$/.test(l)){num=l.replace(/\s/g,"");continue}
+    if(/€/.test(l)||/\d{1,2}:\d{2}/.test(l)||/^(tus tuppers|los m[ií]os|en barra)$/i.test(l))continue;
+    if(l==="+"){blocks.push([]);continue}
+    blocks[blocks.length-1].push(l);
+  }
+  let dishes;
+  if(blocks.length>1)dishes=blocks.filter(b=>b.length).map(b=>({es:b[0],en:b[1]||"",auto:!b[1]}));
+  else dishes=blocks[0].map(l=>({es:l,en:"",auto:true}));
+  if(!dishes.length){setMsg("msg","No se encontraron platos en el texto.","err");return}
+  state.dishes=dishes.slice(0,6);if(num)state.num=num;
+  fillForm();save();$("pasteBox").open=false;setMsg("msg",state.dishes.length+" platos cargados.","ok");
+};
+
+/* ---------- card ---------- */
+function renderCard(){
+  $("cDate").textContent=fmtDate(state.date);$("cNum").textContent=state.num;
+  const cc=$("cCourses");cc.innerHTML="";
+  state.dishes.filter(d=>d.es||d.en).forEach((d,i)=>{
+    if(i>0){const p=document.createElement("div");p.className="c-plus";p.textContent="+";cc.appendChild(p)}
+    const w=document.createElement("div");const a=document.createElement("div");a.textContent=d.es;w.appendChild(a);
+    if(d.en){const b=document.createElement("div");b.textContent=d.en;w.appendChild(b)}cc.appendChild(w);
+  });
+  const cp=$("cPrices");cp.innerHTML="";
+  PRICES.forEach(p=>{const d=document.createElement("div");const b=document.createElement("b");b.textContent=p.amount;d.append(b,document.createTextNode(p.label));cp.appendChild(d)});
+  $("cFoot").textContent=FOOT;
+  const ill=$("ill");const stale=state.image&&state.imageSig!==sig(state.dishes);
+  if(state.image){
+    let img=ill.querySelector("img");
+    if(!img||img.getAttribute("src")!==state.image){ill.innerHTML="";img=document.createElement("img");img.alt="Ilustración del menú";img.src=state.image;ill.appendChild(img)}
+    ill.style.opacity=stale?".45":"1";
+  }else{ill.innerHTML="";const p=document.createElement("p");p.textContent="La ilustración aparece aquí. Tarda alrededor de un minuto.";ill.appendChild(p);ill.style.opacity="1"}
+  $("dlIll").disabled=!state.image;
+  $("go").textContent=stale?"Crear ilustración nueva":"Crear ilustración";
+}
+
+/* ---------- generate ---------- */
+let running=false;
+$("form").addEventListener("submit",async e=>{
+  e.preventDefault();if(running)return;
+  const dishes=state.dishes.filter(d=>d.es.trim()||d.en.trim());
+  if(!dishes.length){setMsg("msg","Añade al menos un plato.","err");return}
+  running=true;$("go").disabled=true;const prog=$("prog");prog.hidden=false;const bar=prog.firstElementChild;bar.style.width="4%";
+  const t0=Date.now();const tick=setInterval(()=>{bar.style.width=Math.min(92,4+(Date.now()-t0)/900)+"%"},600);
+  try{
+    setMsg("msg","Traduciendo y enviando…");
+    const start=await api("/api/generate",{method:"POST",body:JSON.stringify({dishes:dishes.map(d=>({es:d.es,en:d.en})),aspect:state.aspect})});
+    start.dishes.forEach((d,i)=>{const s=state.dishes.find(x=>x.es.trim()===d.es)||state.dishes[i];if(s&&!s.en){s.en=d.en;s.auto=true}});
+    renderDishes();renderCard();save();
+    setMsg("msg","Creando la ilustración…");
+    let images=start.images||[],status=start.status;
+    const deadline=Date.now()+4*60*1000;
+    while(!images.length&&Date.now()<deadline){
+      await new Promise(r=>setTimeout(r,3000));
+      const st=await api("/api/status?id="+encodeURIComponent(start.taskId));
+      status=st.status;images=st.images||[];
+      if(/FAIL|ERROR|CANCEL/.test(status))throw new Error("La generación falló en Freepik ("+status+").");
+    }
+    if(!images.length)throw new Error("Tiempo de espera agotado. Inténtalo de nuevo.");
+    setMsg("msg","Descargando la imagen…");
+    const r=await api("/api/image?url="+encodeURIComponent(images[0]));
+    const blob=await r.blob();
+    const dataUrl=await new Promise(res=>{const fr=new FileReader();fr.onload=()=>res(fr.result);fr.readAsDataURL(blob)});
+    state.image=dataUrl;state.imageSig=sig(state.dishes);state.aspectUsed=state.aspect;
+    renderCard();save();bar.style.width="100%";
+    setMsg("msg","Ilustración lista.","ok");
+  }catch(err){
+    setMsg("msg",err.status===401?"Sesión caducada. Vuelve a entrar.":(err.message||"No se pudo crear la ilustración."),"err");
+    if(err.status===401){try{localStorage.removeItem(PWKEY)}catch(x){}pw="";enter()}
+  }finally{clearInterval(tick);running=false;$("go").disabled=false;setTimeout(()=>{prog.hidden=true;bar.style.width="0"},800)}
+});
+
+/* ---------- download ---------- */
+function wrap(ctx,text,max){const words=String(text).split(/\s+/);const lines=[];let cur="";
+  for(const w of words){const t=cur?cur+" "+w:w;if(ctx.measureText(t).width>max&&cur){lines.push(cur);cur=w}else cur=t}if(cur)lines.push(cur);return lines}
+async function loadImg(src){const im=new Image();im.src=src;await im.decode();return im}
+async function renderPNG(){
+  const W=1080,P=72,IW=W-2*P;const F="'Old Standard TT', Georgia, serif";
+  try{await Promise.all([document.fonts.load("400 40px 'Old Standard TT'"),document.fonts.ready])}catch(e){}
+  const logo=await loadImg("logo.png").catch(()=>null);
+  const img=state.image?await loadImg(state.image).catch(()=>null):null;
+  const ratio=img?img.naturalWidth/img.naturalHeight:1.5;const IH=Math.round(IW/ratio);
+  const c=document.createElement("canvas");const ctx=c.getContext("2d");
+  const dishes=state.dishes.filter(x=>x.es||x.en);
+  function draw(go){
+    let y=P;
+    if(go){ctx.fillStyle="#fff";ctx.fillRect(0,0,c.width,c.height);ctx.strokeStyle="#111";ctx.lineWidth=3;ctx.strokeRect(28,28,c.width-56,c.height-56)}
+    if(logo){const lw=150,lh=Math.round(lw*logo.naturalHeight/logo.naturalWidth);if(go)ctx.drawImage(logo,(W-lw)/2,y,lw,lh);y+=lh+40}
+    if(img){if(go)ctx.drawImage(img,P,y,IW,IH);y+=IH+40}
+    ctx.textAlign="center";
+    const line=(t,size,lh,color)=>{ctx.font=`400 ${size}px ${F}`;for(const l of wrap(ctx,t,IW)){y+=lh;if(go){ctx.fillStyle=color||"#111";ctx.fillText(l,W/2,y)}}};
+    line(fmtDate(state.date),60,70);
+    if(state.num){y+=14;line(state.num,32,40)}
+    y+=24;
+    dishes.forEach((d,i)=>{if(i>0){y+=8;line("+",40,40,"#8a8a8a");y+=4}if(d.es)line(d.es,34,44);if(d.en)line(d.en,34,44)});
+    y+=40;const cw=IW/3;
+    PRICES.forEach((p,i)=>{const x=P+cw*i+cw/2,off=i===1?12:0;if(go){ctx.fillStyle="#111";ctx.font=`400 40px ${F}`;ctx.fillText(p.amount,x,y+42+off);ctx.font=`400 32px ${F}`;ctx.fillText(p.label,x,y+86+off)}});
+    y+=110;y+=24;line(FOOT,30,44,"#8a8a8a");
+    return y+P;
+  }
+  c.width=W;c.height=3000;const H=draw(false);c.height=Math.max(H,W);draw(true);
+  return new Promise(res=>c.toBlob(res,"image/png"));
+}
+function download(blob,name){const a=document.createElement("a");a.href=URL.createObjectURL(blob);a.download=name;document.body.appendChild(a);a.click();setTimeout(()=>{URL.revokeObjectURL(a.href);a.remove()},2000)}
+$("dl").onclick=async()=>{setMsg("dlMsg","Preparando…");try{download(await renderPNG(),"menu-"+state.date+".png");setMsg("dlMsg","Carta descargada.","ok")}catch(e){setMsg("dlMsg","No se pudo crear la imagen.","err")}};
+$("dlIll").onclick=async()=>{if(!state.image)return;const b=await (await fetch(state.image)).blob();download(b,"ilustracion-"+state.date+".png")};
+
+/* ---------- boot ---------- */
+fillForm();
+if(pw)enter();else{$("gate").hidden=false}
+</script>
+</body>
+</html>

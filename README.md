@@ -1,4 +1,3 @@
-[README.md](https://github.com/user-attachments/files/33876376/README.md)
 # Inboxeat · Menú del día
 
 Web-App für das Restaurant: Tagesgerichte auf Spanisch eintragen, Illustration wird sofort über die Freepik-API (Google Nano Banana Pro) erstellt, Karte mit Logo als PNG herunterladen.
