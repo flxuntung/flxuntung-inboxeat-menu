@@ -8,101 +8,132 @@
 <link rel="preconnect" href="https://fonts.googleapis.com">
 <link rel="stylesheet" href="https://fonts.googleapis.com/css2?family=Jost:wght@300;400;500&family=Old+Standard+TT:wght@400;700&display=swap">
 <style>
-/* Inboxeat: black line art on white. Thin rules, geometric sans, wide tracking. The menu card keeps the printed serif. */
+/* Inboxeat editor: black line art on white, one quiet column of steps, the card beside it. */
 :root{
-  --bg:#ffffff; --ink:#111111; --ink-soft:#6b6b6b; --rule:#111111; --rule-soft:#d6d6d6; --wash:#f4f4f2;
+  --bg:#ffffff; --ink:#111111; --ink-soft:#767676; --rule:#111111; --rule-soft:#e2e2df; --wash:#f6f6f4;
   --ok:#2f6b3a; --err:#a3412f;
   --sans:"Jost", "Helvetica Neue", Arial, sans-serif;
   --serif:"Old Standard TT", Georgia, "Times New Roman", serif;
 }
 *{box-sizing:border-box}
 html,body{margin:0;background:var(--bg);color:var(--ink);font-family:var(--sans);font-weight:300;font-size:15px;line-height:1.5}
-body{padding:28px max(16px,env(safe-area-inset-left,0px)) 56px max(16px,env(safe-area-inset-right,0px))}
-.wrap{max-width:1100px;margin:0 auto}
-header{display:flex;align-items:center;gap:18px;padding-bottom:22px;border-bottom:1.5px solid var(--rule);margin-bottom:28px}
-header img{width:52px;height:auto}
-.brand{display:grid;gap:2px}
-.brand b{font-weight:400;letter-spacing:.22em;font-size:17px}
-.brand span{letter-spacing:.3em;font-size:11px;color:var(--ink-soft);text-transform:uppercase}
-header .date{margin-left:auto;display:grid;gap:4px;min-width:170px}
+body{padding:0 max(20px,env(safe-area-inset-left,0px)) 64px max(20px,env(safe-area-inset-right,0px))}
+.wrap{max-width:1080px;margin:0 auto}
+[hidden]{display:none!important}
+
+/* header */
+header{display:flex;align-items:center;gap:16px;height:72px;border-bottom:1.5px solid var(--rule);margin-bottom:40px}
+header img{height:46px;width:auto}
+.brand{display:flex;align-items:baseline;gap:14px}
+.brand b{font-weight:400;letter-spacing:.24em;font-size:15px}
+.brand span{letter-spacing:.22em;font-size:11px;color:var(--ink-soft);text-transform:uppercase}
+header .spacer{flex:1}
+
+/* type */
 .label{font-size:11px;letter-spacing:.22em;text-transform:uppercase;color:var(--ink-soft);font-weight:400}
-h2{font-weight:400;letter-spacing:.18em;text-transform:uppercase;font-size:13px;margin:0}
-.grid{display:grid;grid-template-columns:minmax(0,1fr) minmax(0,1fr);gap:32px;align-items:start}
-@media (max-width:840px){.grid{grid-template-columns:minmax(0,1fr)}}
+.hint{font-size:13px;color:var(--ink-soft);margin:0}
+.msg{font-size:13px;min-height:1.4em;margin:0}
+.msg.ok{color:var(--ok)} .msg.err{color:var(--err)}
+
+/* controls */
+input,textarea{font:inherit;font-weight:300;color:var(--ink);background:transparent;border:0;border-bottom:1.5px solid var(--rule-soft);border-radius:0;padding:8px 0;width:100%;min-width:0}
+input:focus,textarea:focus{outline:none;border-bottom-color:var(--ink)}
+input::placeholder,textarea::placeholder{color:#b4b4b0}
+select{font:inherit;font-weight:300;color:var(--ink);background:#fff;border:0;border-bottom:1.5px solid var(--rule-soft);border-radius:0;padding:8px 28px 8px 0;width:100%;appearance:none;-webkit-appearance:none;
+  background-image:url("data:image/svg+xml,%3Csvg xmlns='http://www.w3.org/2000/svg' width='12' height='8' viewBox='0 0 12 8'%3E%3Cpath d='M1 1l5 5 5-5' fill='none' stroke='%23111' stroke-width='1.5'/%3E%3C/svg%3E");background-repeat:no-repeat;background-position:right 2px center}
+select:focus{outline:none;border-bottom-color:var(--ink)}
+button{font:inherit;cursor:pointer;border-radius:0;letter-spacing:.14em;text-transform:uppercase;font-size:12px;font-weight:400}
+button:focus-visible{outline:1.5px solid var(--ink);outline-offset:3px}
+button:disabled{opacity:.35;cursor:default}
+.btn{background:var(--ink);color:#fff;border:1.5px solid var(--ink);padding:14px 24px}
+.btn.ghost{background:#fff;color:var(--ink)}
+.btn.ghost:hover{background:var(--wash)}
+.link{background:none;border:0;padding:0;color:var(--ink);letter-spacing:.12em;font-size:11px;text-transform:uppercase;font-weight:400}
+.link:hover{color:var(--ink-soft)}
+
+/* layout */
+.grid{display:grid;grid-template-columns:minmax(0,1fr) minmax(0,440px);gap:64px;align-items:start}
+.steps{display:grid;gap:0}
+.step{display:grid;grid-template-columns:72px minmax(0,1fr);gap:24px;padding:28px 0;border-top:1.5px solid var(--rule-soft)}
+.step:first-child{border-top:0;padding-top:0}
+.step .n{font-size:11px;letter-spacing:.22em;text-transform:uppercase;color:var(--ink-soft);padding-top:8px}
+.step .n b{display:block;font-weight:400;color:var(--ink);font-size:11px;margin-bottom:2px}
+.step .body{display:grid;gap:18px;min-width:0}
+.fields{display:grid;grid-template-columns:minmax(0,1fr) 120px;gap:28px}
+.field{display:grid;gap:6px;min-width:0}
+
+/* dishes */
+.dishes{display:grid}
+.dish{display:grid;grid-template-columns:28px minmax(0,1fr) 28px;gap:12px;align-items:start;padding:12px 0;border-bottom:1.5px solid var(--rule-soft)}
+.dish:first-child{padding-top:0}
+.dish .n{font-family:var(--serif);font-size:17px;line-height:38px;color:var(--ink-soft);text-align:left}
+.dish .pair{display:grid;gap:0;min-width:0}
+.dish input{border:0;padding:0}
+.dish input.es{font-family:var(--serif);font-size:20px;line-height:38px}
+.dish input.en{font-size:13px;color:var(--ink-soft);line-height:24px}
+.x{width:28px;height:38px;border:0;background:none;color:#b4b4b0;font-size:20px;letter-spacing:0;padding:0}
+.x:hover{color:var(--ink)}
+.addrow{display:flex;justify-content:space-between;align-items:center;gap:16px;padding-top:4px}
+details{display:grid;gap:12px}
+summary{list-style:none;cursor:pointer}
+summary::-webkit-details-marker{display:none}
+textarea{min-height:120px;border:1.5px solid var(--rule-soft);padding:10px;resize:vertical}
+.paste-actions{display:flex;gap:16px;align-items:center;flex-wrap:wrap}
+
+/* segmented control */
+.seg{display:grid;grid-template-columns:1fr 1fr;border:1.5px solid var(--rule);max-width:360px}
+.seg button{background:#fff;color:var(--ink);border:0;padding:12px 10px;letter-spacing:.12em;font-size:11px}
+.seg button+button{border-left:1.5px solid var(--rule)}
+.seg button[aria-pressed="true"]{background:var(--ink);color:#fff}
+
+/* action */
+.action{display:grid;gap:12px}
+.progress{height:1.5px;background:var(--rule-soft);position:relative;overflow:hidden}
+.progress i{position:absolute;left:0;top:0;bottom:0;width:0;background:var(--ink);transition:width .6s linear}
+
+/* preview */
+.preview{position:sticky;top:24px;display:grid;gap:16px;min-width:0}
+.preview .top{display:flex;justify-content:space-between;align-items:center;gap:12px}
+h2{font-weight:400;letter-spacing:.22em;text-transform:uppercase;font-size:11px;margin:0;color:var(--ink-soft)}
+.cardwrap{background:var(--wash);padding:20px;display:grid;place-items:center}
+#cardCanvas{display:block;width:100%;max-width:400px;height:auto;background:#fff;box-shadow:0 1px 0 rgba(0,0,0,.06),0 0 0 1px var(--rule-soft)}
+.preview .links{display:flex;gap:20px;flex-wrap:wrap}
+.preview .btn{width:100%}
+
+/* password gate */
+.gate{max-width:360px;margin:14vh auto 0;display:grid;gap:26px;text-align:center}
+.gate img{width:110px;justify-self:center}
+.gate form{display:grid;gap:16px}
+.gate input{text-align:center}
+
+/* mobile */
 .mbar{display:none}
-@media (max-width:640px){
-  body{padding-top:16px;padding-bottom:calc(132px + env(safe-area-inset-bottom,0px))}
-  header{display:grid;grid-template-columns:auto 1fr;gap:6px 12px;padding-bottom:14px;margin-bottom:20px}
-  header img{width:38px}
-  .brand b{font-size:15px}
-  .brand span{font-size:10px;letter-spacing:.22em}
-  header .date{grid-column:1 / -1;margin-left:0;min-width:0;grid-template-columns:auto 1fr;align-items:center;gap:12px;margin-top:8px}
-  .grid{gap:28px}
-  .panel{gap:16px}
+@media (max-width:840px){
+  body{padding-bottom:calc(136px + env(safe-area-inset-bottom,0px))}
+  header{height:60px;margin-bottom:28px}
+  header img{height:38px}
+  .brand span{display:none}
+  .grid{grid-template-columns:minmax(0,1fr);gap:40px}
+  .step{grid-template-columns:minmax(0,1fr);gap:12px;padding:22px 0}
+  .step .n{padding-top:0}
+  .step .n b{display:inline;margin-right:8px}
+  .fields{grid-template-columns:minmax(0,1fr) 100px;gap:20px}
   input,select,textarea{font-size:16px}
-  .dish{grid-template-columns:20px minmax(0,1fr) 30px;gap:8px;padding:8px 6px 8px 10px}
-  .dish .n{font-size:16px;line-height:38px}
-  .dish input.es{font-size:17px}
-  .dish input.en{font-size:16px}
-  .x{width:30px;height:38px}
-  select{width:100%}
-  #go,#dl,#dlIll{display:none}
-  #form .row:last-of-type .msg{display:none}
-  .actions{justify-content:flex-start}
-  #cartaSec .cardwrap{padding:0;background:none}
-  #cartaSec #cardCanvas{max-width:100%;box-shadow:0 0 0 1px var(--rule-soft)}
+  .dish input.es{font-size:19px}
+  .dish input.en{font-size:15px}
+  .seg{max-width:none}
+  .action,#dl,#dlIll,#redo{display:none}
+  .preview{position:static}
+  .cardwrap{padding:0;background:none}
+  #cardCanvas{max-width:100%}
   .mbar{display:grid;gap:8px;position:fixed;left:0;right:0;bottom:0;z-index:20;background:#fff;border-top:1.5px solid var(--rule);
     padding:10px max(16px,env(safe-area-inset-right,0px)) calc(12px + env(safe-area-inset-bottom,0px)) max(16px,env(safe-area-inset-left,0px))}
-  .mbar[hidden]{display:none!important}
   .mbar .msg{min-height:1.2em;font-size:12px;text-align:center}
   .mrow{display:grid;grid-template-columns:1fr 1.6fr;gap:8px}
   .mrow.three{grid-template-columns:.9fr 1fr 1.3fr}
-  .mrow .btn{padding:12px 4px;font-size:10.5px;letter-spacing:.08em;line-height:1.3}
-  .mrow .btn{padding:14px 10px}
-  .progress{position:fixed;left:0;right:0;bottom:calc(118px + env(safe-area-inset-bottom,0px));z-index:21}
+  .mrow .btn{padding:14px 6px;font-size:10.5px;letter-spacing:.08em;line-height:1.3}
+  .progress.mobile{position:fixed;left:0;right:0;bottom:calc(118px + env(safe-area-inset-bottom,0px));z-index:21;display:block}
 }
-.panel{display:grid;gap:20px;min-width:0}
-.field{display:grid;gap:6px;min-width:0}
-input,textarea{font:inherit;font-weight:300;color:var(--ink);background:#fff;border:0;border-bottom:1.5px solid var(--rule-soft);border-radius:0;padding:9px 2px;width:100%;min-width:0}
-input:focus,textarea:focus{outline:none;border-bottom-color:var(--ink)}
-button:focus-visible,select:focus-visible{outline:1.5px solid var(--ink);outline-offset:3px}
-select{font:inherit;font-weight:300;color:var(--ink);background:#fff;border:1.5px solid var(--rule);border-radius:0;padding:8px 10px}
-button{font:inherit;cursor:pointer;border-radius:0;letter-spacing:.14em;text-transform:uppercase;font-size:12px;font-weight:400}
-button:disabled{opacity:.4;cursor:default}
-.btn{background:var(--ink);color:#fff;border:1.5px solid var(--ink);padding:13px 22px}
-.btn.ghost{background:#fff;color:var(--ink)}
-.btn.ghost:hover{background:var(--wash)}
-.link{background:none;border:0;padding:0;color:var(--ink-soft);text-decoration:underline;text-underline-offset:3px;letter-spacing:.08em}
-.row{display:flex;flex-wrap:wrap;gap:12px;align-items:center}
-.dishes{display:grid;gap:10px}
-.dish{display:grid;grid-template-columns:28px minmax(0,1fr) 34px;gap:10px;align-items:start;border:1.5px solid var(--rule);padding:12px 12px 12px 14px}
-.dish .n{font-family:var(--serif);font-size:18px;line-height:40px;color:var(--ink-soft)}
-.dish .pair{display:grid;gap:2px;min-width:0}
-.dish input.es{font-family:var(--serif);font-size:18px;padding:6px 2px}
-.dish input.en{font-size:13px;color:var(--ink-soft);padding:5px 2px}
-.x{width:34px;height:40px;border:0;background:none;color:var(--ink-soft);font-size:20px;letter-spacing:0}
-.x:hover{color:var(--ink)}
-details{border-top:1.5px solid var(--rule-soft);padding-top:12px}
-summary{cursor:pointer;color:var(--ink-soft);letter-spacing:.08em;font-size:13px}
-details[open] summary{margin-bottom:10px}
-textarea{min-height:130px;border:1.5px solid var(--rule-soft);padding:10px;resize:vertical}
-.hint{font-size:13px;color:var(--ink-soft);margin:0}
-.msg{font-size:13px;min-height:1.4em;margin:0;letter-spacing:.02em}
-.msg.ok{color:var(--ok)} .msg.err{color:var(--err)}
-.progress{height:1.5px;background:var(--rule-soft);position:relative;overflow:hidden}
-.progress i{position:absolute;left:0;top:0;bottom:0;width:0;background:var(--ink);transition:width .6s linear}
-.progress[hidden]{display:none}
-
-/* the printed card: rendered on a canvas so preview and download are identical */
-.cardwrap{background:var(--wash);padding:14px;display:grid;place-items:center}
-#cardCanvas{display:block;width:100%;max-width:520px;height:auto;background:#fff;box-shadow:0 0 0 1px var(--rule-soft)}
-.actions{display:flex;flex-wrap:wrap;gap:12px;justify-content:space-between;align-items:center}
-
-/* password gate */
-.gate{max-width:380px;margin:12vh auto 0;display:grid;gap:22px;text-align:center}
-.gate img{width:120px;justify-self:center}
-.gate form{display:grid;gap:14px}
-[hidden]{display:none!important}
 @media (prefers-reduced-motion:reduce){*{transition:none!important}}
 </style>
 </head>
@@ -121,84 +152,96 @@ textarea{min-height:130px;border:1.5px solid var(--rule-soft);padding:10px;resiz
 <div class="wrap" id="app" hidden>
   <header>
     <img src="logo.png" alt="">
-    <div class="brand"><b>INBOXEAT</b><span>Encaja · Menú del día</span></div>
-    <div class="date">
-      <label class="label" for="date">Día</label>
-      <input type="date" id="date">
-    </div>
+    <div class="brand"><b>INBOXEAT</b><span>Menú del día</span></div>
+    <div class="spacer"></div>
+    <button type="button" class="link" id="newMenu">Nuevo menú</button>
   </header>
 
   <div class="grid">
-    <form class="panel" id="form">
-      <div class="row" style="justify-content:space-between">
-        <h2>Menú</h2>
-        <button type="button" class="link" id="newMenu">Nuevo menú</button>
-      </div>
+    <form class="steps" id="form">
 
-      <div class="field" style="max-width:140px">
-        <label class="label" for="num">Número</label>
-        <input id="num" placeholder="#611" aria-describedby="numHint">
-        <p class="hint" id="numHint">Se calcula solo (lunes a viernes). Corrígelo si hace falta.</p>
-      </div>
-
-      <div class="field">
-        <span class="label">Platos</span>
-        <div class="dishes" id="dishes"></div>
-        <div class="row"><button type="button" class="link" id="add">+ Añadir plato</button></div>
-        <p class="hint">Escribe en español. El inglés se traduce al crear la ilustración y se puede corregir.</p>
-      </div>
-
-      <details id="pasteBox">
-        <summary>Pegar el menú completo</summary>
-        <div class="field">
-          <textarea id="paste" aria-label="Texto del menú" placeholder="Consomex&#10;+&#10;Boniatos fritos con salsa&#10;+&#10;Torta de quesabirria&#10;+&#10;Postre de mango"></textarea>
-          <button type="button" class="btn ghost" id="parse">Rellenar desde el texto</button>
-          <p class="hint">Un plato por línea o separados por "+". Fecha, precios y horario se ignoran.</p>
+      <section class="step">
+        <div class="n"><b>01</b>Día</div>
+        <div class="body">
+          <div class="fields">
+            <div class="field">
+              <label class="label" for="date">Fecha</label>
+              <input type="date" id="date">
+            </div>
+            <div class="field">
+              <label class="label" for="num">Menú nº</label>
+              <input id="num" placeholder="612" inputmode="numeric">
+            </div>
+          </div>
+          <div class="field">
+            <label class="label" for="theme">Tema</label>
+            <select id="theme">
+              <option value="auto">Automático según el día</option>
+              <option value="lactosa">Sin lactosa · lunes</option>
+              <option value="marisco">Marisco · martes</option>
+              <option value="gluten">Sin gluten · miércoles</option>
+              <option value="vegetariano">Vegetariano · jueves</option>
+              <option value="freaky">Freaky Friday · viernes</option>
+              <option value="none">Sin tema</option>
+            </select>
+            <p class="hint" id="themeHint"></p>
+          </div>
         </div>
-      </details>
+      </section>
 
-      <div class="field">
-        <label class="label" for="theme">Tema del día</label>
-        <select id="theme">
-          <option value="auto">Automático según el día</option>
-          <option value="lactosa">Sin lactosa (lunes)</option>
-          <option value="marisco">Marisco (martes)</option>
-          <option value="gluten">Sin gluten (miércoles)</option>
-          <option value="vegetariano">Vegetariano (jueves)</option>
-          <option value="freaky">Freaky Friday (viernes)</option>
-          <option value="none">Sin tema</option>
-        </select>
-        <p class="hint" id="themeHint"></p>
-      </div>
+      <section class="step">
+        <div class="n"><b>02</b>Platos</div>
+        <div class="body">
+          <div class="dishes" id="dishes"></div>
+          <div class="addrow">
+            <button type="button" class="link" id="add">+ Añadir plato</button>
+            <details id="pasteBox"><summary class="link">Pegar texto</summary></details>
+          </div>
+          <div class="field" id="pasteField" hidden>
+            <textarea id="paste" aria-label="Texto del menú" placeholder="Consomex&#10;+&#10;Boniatos fritos con salsa&#10;+&#10;Torta de quesabirria&#10;+&#10;Postre de mango"></textarea>
+            <div class="paste-actions">
+              <button type="button" class="btn ghost" id="parse">Rellenar</button>
+              <p class="hint">Un plato por línea o separados por "+".</p>
+            </div>
+          </div>
+          <p class="hint">El inglés se traduce solo y se puede corregir.</p>
+        </div>
+      </section>
 
-      <div class="field">
-        <label class="label" for="aspect">Formato de la carta</label>
-        <select id="aspect">
-          <option value="4:5">Instagram post · 4:5 (1080 × 1350)</option>
-          <option value="9:16">Story / WhatsApp · 9:16 (1080 × 1920)</option>
-        </select>
-        <p class="hint">La ilustración se crea a la medida del formato. Si cambias el formato, crea una ilustración nueva.</p>
-        <p class="hint" id="postHint" hidden>Instagram post: solo el menú, sin ilustración. Para la ilustración elige Story.</p>
-      </div>
+      <section class="step">
+        <div class="n"><b>03</b>Formato</div>
+        <div class="body">
+          <div class="seg" role="group" aria-label="Formato de la carta">
+            <button type="button" data-aspect="4:5" aria-pressed="true">Post · 4:5</button>
+            <button type="button" data-aspect="9:16" aria-pressed="false">Story · 9:16</button>
+          </div>
+          <select id="aspect" hidden aria-hidden="true"><option value="4:5">4:5</option><option value="9:16">9:16</option></select>
+          <p class="hint" id="postHint" hidden>Post: solo el menú, sin ilustración.</p>
+          <p class="hint" id="storyHint" hidden>Story: con ilustración. Si cambias los platos, crea una nueva.</p>
+        </div>
+      </section>
 
-      <div class="row">
-        <button type="submit" class="btn" id="go">Crear ilustración</button>
-        <p class="msg" id="msg" role="status"></p>
-      </div>
-      <div class="progress" id="prog" hidden><i></i></div>
+      <section class="step action" id="actionStep">
+        <div class="n"></div>
+        <div class="body">
+          <div><button type="submit" class="btn" id="go">Crear ilustración</button></div>
+          <div class="progress" id="prog" hidden><i></i></div>
+          <p class="msg" id="msg" role="status"></p>
+        </div>
+      </section>
     </form>
 
-    <section class="panel" aria-labelledby="ch" id="cartaSec">
-      <div class="actions">
+    <section class="preview" aria-labelledby="ch" id="cartaSec">
+      <div class="top">
         <h2 id="ch">Carta</h2>
-        <div class="row">
+        <div class="links">
           <button type="button" class="link" id="dlIll" disabled>Solo ilustración</button>
-          <button type="button" class="btn ghost" id="redo" hidden>Otra ilustración</button>
-          <button type="button" class="btn" id="dl">Descargar carta</button>
+          <button type="button" class="link" id="redo" hidden>Otra ilustración</button>
         </div>
       </div>
       <div class="cardwrap"><canvas id="cardCanvas" aria-label="Vista previa de la carta"></canvas></div>
       <p class="hint" id="staleNote" hidden></p>
+      <button type="button" class="btn" id="dl">Descargar</button>
       <p class="msg" id="dlMsg" role="status"></p>
     </section>
   </div>
@@ -256,8 +299,9 @@ function renderDishes(){
     const n=document.createElement("div");n.className="n";n.textContent=i+1;
     const pair=document.createElement("div");pair.className="pair";
     const es=document.createElement("input");es.className="es";es.id="es-"+i;es.value=d.es;es.placeholder="Plato";es.setAttribute("aria-label","Plato "+(i+1));
-    const en=document.createElement("input");en.className="en";en.id="en-"+i;en.value=d.en;en.placeholder="English (automático)";en.setAttribute("aria-label","Plato "+(i+1)+" en inglés");
+    const en=document.createElement("input");en.className="en";en.id="en-"+i;en.value=d.en;en.placeholder="English";en.setAttribute("aria-label","Plato "+(i+1)+" en inglés");
     es.oninput=()=>{d.es=es.value;d.en="";d.auto=true;en.value="";renderCard();save()};
+    es.onkeydown=e=>{if(e.key==="Enter"){e.preventDefault();if(i===state.dishes.length-1&&state.dishes.length<6)$("add").click();else{const nx=$("es-"+(i+1));if(nx)nx.focus()}}};
     en.oninput=()=>{d.en=en.value;d.auto=!en.value;renderCard();save()};
     pair.append(es,en);
     const x=document.createElement("button");x.type="button";x.className="x";x.textContent="×";x.setAttribute("aria-label","Quitar plato "+(i+1));
@@ -277,7 +321,7 @@ function weekdaysBetween(a,b){
 }
 const autoNum=date=>"#"+(numRef.num+weekdaysBetween(numRef.date,date));
 function applyAutoNum(){if(!state.numManual){state.num=autoNum(state.date);$("num").value=state.num}}
-function fillForm(){$("date").value=state.date;$("num").value=state.num;$("aspect").value=state.aspect;$("theme").value=state.theme||"auto";renderDishes();renderCard()}
+function fillForm(){$("date").value=state.date;$("num").value=state.num;$("aspect").value=state.aspect;document.querySelectorAll(".seg [data-aspect]").forEach(b=>b.setAttribute("aria-pressed",String(b.dataset.aspect===state.aspect)));$("theme").value=state.theme||"auto";renderDishes();renderCard()}
 $("date").onchange=e=>{if(e.target.value){state.date=e.target.value;state.numManual=false;applyAutoNum();renderCard();save()}};
 $("num").oninput=e=>{
   state.num=e.target.value;const n=parseInt(state.num.replace(/\D/g,""),10);
@@ -286,7 +330,9 @@ $("num").oninput=e=>{
   renderCard();save();
 };
 $("num").onblur=()=>{if(!state.num.trim()){state.numManual=false;applyAutoNum();renderCard();save()}};
-$("aspect").onchange=e=>{state.aspect=e.target.value;renderCard();save()};
+function setAspect(v){state.aspect=v;$("aspect").value=v;document.querySelectorAll(".seg [data-aspect]").forEach(b=>b.setAttribute("aria-pressed",String(b.dataset.aspect===v)));renderCard();save()}
+document.querySelectorAll(".seg [data-aspect]").forEach(b=>b.onclick=()=>setAspect(b.dataset.aspect));
+$("pasteBox").addEventListener("toggle",()=>{$("pasteField").hidden=!$("pasteBox").open;if($("pasteBox").open)$("paste").focus()});
 $("theme").onchange=e=>{state.theme=e.target.value;renderCard();save()};
 $("add").onclick=()=>{state.dishes.push({es:"",en:"",auto:true});renderDishes();save();$("es-"+(state.dishes.length-1)).focus()};
 $("newMenu").onclick=()=>{
@@ -489,9 +535,9 @@ function renderCard(){
   else note.hidden=true;
   $("dlIll").disabled=!state.image;
   const post=state.aspect==="4:5";
-  $("go").hidden=post;$("prog").hidden=post||$("prog").hidden;
+  $("prog").hidden=post||$("prog").hidden;
   $("dlIll").hidden=post;
-  $("postHint").hidden=!post;
+  $("postHint").hidden=!post;$("storyHint").hidden=post;$("actionStep").hidden=post;
   $("go").textContent=stale?"Crear ilustración nueva":(state.image?"Crear otra ilustración":"Crear ilustración");
   $("redo").hidden=!state.image||isPhone()||state.aspect==="4:5";
   syncBar();
@@ -505,7 +551,7 @@ $("form").addEventListener("submit",async e=>{
   if(state.aspect==="4:5"){setMsg("msg","Instagram post no lleva ilustración. Elige Story.","err");return}
   const dishes=state.dishes.filter(d=>d.es.trim()||d.en.trim());
   if(!dishes.length){setMsg("msg","Añade al menos un plato.","err");return}
-  running=true;$("go").disabled=true;syncBar();const prog=$("prog");prog.hidden=false;const bar=prog.firstElementChild;bar.style.width="4%";
+  running=true;$("go").disabled=true;syncBar();const prog=$("prog");prog.hidden=false;prog.classList.toggle("mobile",isPhone());const bar=prog.firstElementChild;bar.style.width="4%";
   const t0=Date.now();const tick=setInterval(()=>{bar.style.width=Math.min(92,4+(Date.now()-t0)/900)+"%"},600);
   try{
     setMsg("msg","Traduciendo y enviando…");
@@ -535,7 +581,7 @@ $("form").addEventListener("submit",async e=>{
   }catch(err){
     setMsg("msg",err.status===401?"Sesión caducada. Vuelve a entrar.":(err.message||"No se pudo crear la ilustración."),"err");
     if(err.status===401){try{localStorage.removeItem(PWKEY)}catch(x){}pw="";enter()}
-  }finally{clearInterval(tick);running=false;$("go").disabled=false;syncBar();setTimeout(()=>{prog.hidden=true;bar.style.width="0"},800)}
+  }finally{clearInterval(tick);running=false;$("go").disabled=false;syncBar();setTimeout(()=>{prog.hidden=true;prog.classList.remove("mobile");bar.style.width="0"},800)}
 });
 
 async function toJpegDataUrl(blob){
