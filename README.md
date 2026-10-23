@@ -24,7 +24,7 @@ Der API-Schlüssel liegt nur auf dem Server (Vercel-Umgebungsvariable), nie im B
 | `APP_PASSWORD` | ja | Gemeinsames Passwort fürs Restaurant |
 | `ANTHROPIC_API_KEY` | nein | Bessere Übersetzung im Menü-Stil ("Fennel & saffron"). Ohne Schlüssel wird MyMemory (kostenlos, wörtlich) genutzt |
 | `FREEPIK_MODEL` | nein | Standard `nano-banana-pro`. Endpunkt: `https://api.magnific.com/v1/ai/text-to-image/<MODEL>` |
-| `STYLE_REFERENCE` | nein | Standard `on`: `api/public/style-ref.jpg` wird als Stilvorlage mitgeschickt. `off` schaltet das ab |
+| `STYLE_REFERENCE` | nein | Standard `off`. Mit `on` wird `api/public/style-ref.jpg` als Stilvorlage mitgeschickt |
 | `IMAGE_RESOLUTION` | nein | `1K` (Standard), `2K` oder `4K`. Über 2k kann der Bild-Proxy an das 4,5-MB-Limit von Vercel stoßen |
 
 3. Deploy. Die App läuft unter der Vercel-URL, Link ans Restaurant geben, Passwort separat mitteilen.

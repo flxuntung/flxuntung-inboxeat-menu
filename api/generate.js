@@ -28,7 +28,7 @@ module.exports = async (req, res) => {
     };
     // Style reference: the illustration the restaurant chose, served from this app.
     const host = req.headers["x-forwarded-host"] || req.headers.host;
-    const styleRef = L.env("STYLE_REFERENCE", "on") !== "off" && host
+    const styleRef = L.env("STYLE_REFERENCE", "off") === "on" && host
       ? [{ image: `https://${host}/style-ref.jpg`, mime_type: "image/jpeg",
            text: "Style reference only: copy the drawing technique, paper background, color palette, black tableware and composition style. Do not copy these dishes." }]
       : null;
