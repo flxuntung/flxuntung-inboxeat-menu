@@ -335,6 +335,21 @@ const THEMES={
   freaky:{bg:"#f5d6c8",accent:"#bf5236",name:"Freaky Friday"},
   none:{bg:"#ffffff",accent:"#8a8a8a",name:""}
 };
+/* line icons per theme on a 48x48 grid, drawn as strokes in the theme accent (same thin line language as the logo) */
+const THEME_ICON={
+  lactosa:["M18 8h12v6l5 7v19a2 2 0 0 1-2 2H15a2 2 0 0 1-2-2V21l5-7z","M13 22h22","M7 41L41 7"],
+  marisco:["M24 41L7 19C12 9 18 6 24 6s12 3 17 13z","M24 41L14 10","M24 41V6","M24 41L34 10","M24 41L9 22","M24 41L39 22","M20 41h8l-1 4h-6z"],
+  gluten:["M24 44V10","M24 14c-5-1-8-5-8-10 5 1 8 5 8 10z","M24 14c5-1 8-5 8-10-5 1-8 5-8 10z","M24 23c-5-1-8-5-8-10 5 1 8 5 8 10z","M24 23c5-1 8-5 8-10-5 1-8 5-8 10z","M24 32c-5-1-8-5-8-10 5 1 8 5 8 10z","M24 32c5-1 8-5 8-10-5 1-8 5-8 10z","M7 41L41 7"],
+  vegetariano:["M9 39C9 20 21 8 40 8c0 19-12 31-31 31z","M9 39L31 17","M20 28h-6","M26 22v-7","M20 28v7"],
+  freaky:["M22 6c2 12 6 16 18 18-12 2-16 6-18 18-2-12-6-16-18-18 12-2 16-6 18-18z","M39 4v8","M35 8h8","M9 37v6","M6 40h6"]
+};
+function drawThemeIcon(ctx,key,cx,cy,size,color,lw){
+  const paths=THEME_ICON[key];if(!paths)return;
+  ctx.save();ctx.translate(cx-size/2,cy-size/2);ctx.scale(size/48,size/48);
+  ctx.strokeStyle=color;ctx.lineWidth=lw*48/size;ctx.lineCap="round";ctx.lineJoin="round";
+  for(const d of paths){ctx.stroke(new Path2D(d))}
+  ctx.restore();
+}
 const WEEKDAY_THEME={1:"lactosa",2:"marisco",3:"gluten",4:"vegetariano",5:"freaky"};
 const autoThemeKey=iso=>WEEKDAY_THEME[new Date(iso+"T00:00:00Z").getUTCDay()]||"none";
 const themeKey=()=>(state.theme&&state.theme!=="auto"&&THEMES[state.theme])?state.theme:autoThemeKey(state.date);
@@ -374,7 +389,9 @@ function drawCard(ctx,W,H,img,textOnly){
     const text=(t,size,weight,fam,ls,lh,color,q)=>{set(`${weight} ${size*q}px ${fam}`,ls*q);for(const l of wrap(ctx,t,maxW)){y+=lh*q;if(go){ctx.fillStyle=color;ctx.fillText(l,W/2,y)}}};
     if(!skipTop){
       const th=dayTheme();
-      if(th.name){text(th.name.toUpperCase(),28,500,S,8,32,th.accent,kf);y+=12*kf}
+      const tk=themeKey();
+      if(THEME_ICON[tk]){const isz=72*kf;if(go)drawThemeIcon(ctx,tk,W/2,y+isz/2,isz,th.accent,2.4*kf);y+=isz+18*kf}
+      if(th.name){text(th.name.toUpperCase(),40,500,S,11,44,th.accent,kf);y+=14*kf}
       if(numTxt){text("MENÚ  Nº "+numTxt,19,400,S,5.5,26,"#6f6f6f",kf)}
       y+=24*kf+ex*0.5;
       text(fmtDate(state.date),70,400,F,0,70,"#111",kf);
