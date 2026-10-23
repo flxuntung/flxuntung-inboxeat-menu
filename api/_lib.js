@@ -77,7 +77,7 @@ function buildPrompt(en) {
   if (!d.length) return "";
   const list = d.length > 1 ? d.slice(0, -1).join("; ") + "; and " + d[d.length - 1] : d[0];
   const kind = WORDS[d.length] || d.length + "-course";
-  return `Stylish hand-drawn illustration of a ${kind} menu on a wooden table, seen from directly above, full-bleed composition: ${list}. The dishes are arranged close together and fill the entire frame edge to edge, tightly cropped, evenly spread across the whole image with no empty background areas; every dish is fully visible and none is cut off. Loose ink linework with soft watercolor washes, muted warm palette, textured paper look, elegant editorial food illustration, no text, no letters, no words.`;
+  return `Mouth-watering hand-drawn food illustration of a ${kind} lunch menu, seen from directly above on a rustic wooden table, full-bleed composition: ${list}. Each dish looks freshly cooked, generously portioned and irresistibly appetizing: glossy sauces, golden crispy edges, steam rising from hot food, juicy textures, fresh herbs and garnishes, vibrant natural colors with rich warm tones. The dishes are arranged close together and fill the entire frame edge to edge, evenly spread with no empty background areas; every dish is fully visible and none is cut off. Expressive ink linework with lush, saturated watercolor washes and soft highlights, inviting warm lighting, high-end editorial food illustration in the style of a gourmet cookbook, no text, no letters, no words.`;
 }
 
 // Translate Spanish dish names to short English menu lines.
