@@ -77,7 +77,7 @@ function buildPrompt(en) {
   if (!d.length) return "";
   const list = d.length > 1 ? d.slice(0, -1).join("; ") + "; and " + d[d.length - 1] : d[0];
   const kind = WORDS[d.length] || d.length + "-course";
-  return `Stylish hand-drawn illustration of a ${kind} menu on a table, seen from above: ${list}. Loose ink linework with soft watercolor washes, muted warm palette, generous white paper background, elegant editorial food illustration, no text, no letters, no words.`;
+  return `Stylish hand-drawn illustration of a ${kind} menu on a wooden table, seen from directly above, full-bleed composition: ${list}. The dishes are arranged close together and fill the entire frame edge to edge, tightly cropped, evenly spread across the whole image with no empty background areas; every dish is fully visible and none is cut off. Loose ink linework with soft watercolor washes, muted warm palette, textured paper look, elegant editorial food illustration, no text, no letters, no words.`;
 }
 
 // Translate Spanish dish names to short English menu lines.
