@@ -55,7 +55,9 @@ h2{font-weight:400;letter-spacing:.18em;text-transform:uppercase;font-size:13px;
     padding:10px max(16px,env(safe-area-inset-right,0px)) calc(12px + env(safe-area-inset-bottom,0px)) max(16px,env(safe-area-inset-left,0px))}
   .mbar[hidden]{display:none!important}
   .mbar .msg{min-height:1.2em;font-size:12px;text-align:center}
-  .mrow{display:grid;grid-template-columns:1fr 1.6fr;gap:10px}
+  .mrow{display:grid;grid-template-columns:1fr 1.6fr;gap:8px}
+  .mrow.three{grid-template-columns:.9fr 1fr 1.3fr}
+  .mrow .btn{padding:12px 4px;font-size:10.5px;letter-spacing:.08em;line-height:1.3}
   .mrow .btn{padding:14px 10px}
   .progress{position:fixed;left:0;right:0;bottom:calc(118px + env(safe-area-inset-bottom,0px));z-index:21}
 }
@@ -191,6 +193,7 @@ textarea{min-height:130px;border:1.5px solid var(--rule-soft);padding:10px;resiz
         <h2 id="ch">Carta</h2>
         <div class="row">
           <button type="button" class="link" id="dlIll" disabled>Solo ilustración</button>
+          <button type="button" class="btn ghost" id="redo" hidden>Otra ilustración</button>
           <button type="button" class="btn" id="dl">Descargar carta</button>
         </div>
       </div>
@@ -205,6 +208,7 @@ textarea{min-height:130px;border:1.5px solid var(--rule-soft);padding:10px;resiz
   <p class="msg" id="mMsg" role="status"></p>
   <div class="mrow">
     <button type="button" class="btn ghost" id="mView">Ver carta</button>
+    <button type="button" class="btn ghost" id="mRedo" hidden>Nueva imagen</button>
     <button type="button" class="btn" id="mMain">Crear ilustración</button>
   </div>
 </div>
@@ -412,7 +416,8 @@ function renderCard(){
   if(stale){note.hidden=false;note.textContent=(state.aspectUsed&&state.aspectUsed!==fmt().img)?"Formato cambiado: la ilustración se recorta. Crea una nueva para que encaje bien.":"Platos cambiados: la ilustración ya no coincide. Crea una nueva."}
   else note.hidden=true;
   $("dlIll").disabled=!state.image;
-  $("go").textContent=stale?"Crear ilustración nueva":"Crear ilustración";
+  $("go").textContent=stale?"Crear ilustración nueva":(state.image?"Crear otra ilustración":"Crear ilustración");
+  $("redo").hidden=!state.image||isPhone();
   syncBar();
 }
 try{Promise.all(["400 40px 'Old Standard TT'","300 24px Jost","400 18px Jost","500 21px Jost"].map(f=>document.fonts.load(f))).then(renderCard);document.fonts.ready.then(renderCard)}catch(e){}
@@ -490,10 +495,14 @@ $("dl").onclick=saveCard;
 /* mobile bar: main action is "create" until an up-to-date image exists, then "save/share" */
 function syncBar(){
   const ready=!!state.image&&!isStale();
-  $("mMain").textContent=running?"Creando…":ready?"Guardar / compartir":($("go").textContent);
+  $("mMain").textContent=running?"Creando…":ready?"Guardar":($("go").textContent);
   $("mMain").disabled=running;
+  $("mRedo").hidden=!ready;$("mRedo").disabled=running;
+  $("mRedo").parentElement.classList.toggle("three",ready);
 }
 $("mMain").onclick=()=>{if(!!state.image&&!isStale())saveCard();else $("form").requestSubmit()};
+const regenerate=()=>{if(running)return;$("form").requestSubmit()};
+$("mRedo").onclick=regenerate;$("redo").onclick=regenerate;
 $("mView").onclick=()=>{const sec=$("cartaSec");const r=sec.getBoundingClientRect();
   if(r.top<80&&r.bottom>0)window.scrollTo({top:0,behavior:"smooth"});else sec.scrollIntoView({behavior:"smooth",block:"start"})};
 window.addEventListener("scroll",()=>{const r=$("cartaSec").getBoundingClientRect();$("mView").textContent=(r.top<120)?"Editar menú":"Ver carta"},{passive:true});
