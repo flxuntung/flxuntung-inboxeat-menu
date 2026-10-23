@@ -350,39 +350,46 @@ function drawThemeIcon(ctx,key,cx,cy,size,color,lw){
   for(const d of paths){ctx.stroke(new Path2D(d))}
   ctx.restore();
 }
-/* subtle themed frame around the text area, drawn in the theme accent at low opacity */
-function drawThemeFrame(ctx,key,x,y,w,h,s,color){
-  if(!key||key==="none")return;
-  ctx.save();ctx.strokeStyle=color;ctx.fillStyle=color;ctx.globalAlpha=0.55;ctx.lineWidth=Math.max(1,2*s);ctx.lineCap="round";ctx.lineJoin="round";
-  const edges=[[x,y,x+w,y],[x+w,y,x+w,y+h],[x+w,y+h,x,y+h],[x,y+h,x,y]];
-  const along=(fn,step)=>{for(const [x1,y1,x2,y2] of edges){const L=Math.hypot(x2-x1,y2-y1),n=Math.max(1,Math.round(L/step)),ux=(x2-x1)/L,uy=(y2-y1)/L;for(let i=0;i<=n;i++){const t=i/n;fn(x1+(x2-x1)*t,y1+(y2-y1)*t,ux,uy,i,n)}}};
-  if(key==="marisco"){
-    // gentle waves on all four sides
-    const A=5*s,lam=34*s;
-    for(const [x1,y1,x2,y2] of edges){const L=Math.hypot(x2-x1,y2-y1),ux=(x2-x1)/L,uy=(y2-y1)/L,nx=-uy,ny=ux,cyc=Math.max(1,Math.round(L/lam)),lm=L/cyc;
-      ctx.beginPath();for(let d=0;d<=L;d+=2*s){const o=Math.sin(d/lm*Math.PI*2)*A;const px=x1+ux*d+nx*o,py=y1+uy*d+ny*o;d===0?ctx.moveTo(px,py):ctx.lineTo(px,py)}ctx.stroke()}
-  }else if(key==="vegetariano"){
-    // thin vine with small leaves alternating along the line
-    ctx.strokeRect(x,y,w,h);
-    along((px,py,ux,uy,i,n)=>{if(i===0||i===n)return;const side=i%2?1:-1,nx=-uy*side,ny=ux*side;
-      ctx.save();ctx.translate(px,py);ctx.rotate(Math.atan2(ny,nx)-Math.PI/4*side);ctx.beginPath();ctx.ellipse(9*s,0,9*s,3.6*s,0,0,Math.PI*2);ctx.stroke();ctx.restore()},64*s);
-  }else if(key==="gluten"){
-    // line with small grain chevrons, like a wheat ear laid along the edges
-    ctx.strokeRect(x,y,w,h);
-    along((px,py,ux,uy,i,n)=>{if(i===0||i===n)return;const nx=-uy,ny=ux,a=6*s,b=5*s;
-      ctx.beginPath();ctx.moveTo(px-ux*a+nx*b,py-uy*a+ny*b);ctx.lineTo(px,py);ctx.lineTo(px-ux*a-nx*b,py-uy*a-ny*b);ctx.stroke()},30*s);
-  }else if(key==="lactosa"){
-    // soft double line with rounded corners
-    const r=22*s,g=8*s;
-    const rr=(X,Y,Wd,Ht,R)=>{ctx.beginPath();ctx.moveTo(X+R,Y);ctx.arcTo(X+Wd,Y,X+Wd,Y+Ht,R);ctx.arcTo(X+Wd,Y+Ht,X,Y+Ht,R);ctx.arcTo(X,Y+Ht,X,Y,R);ctx.arcTo(X,Y,X+Wd,Y,R);ctx.closePath();ctx.stroke()};
-    rr(x,y,w,h,r);ctx.lineWidth=Math.max(1,1.2*s);rr(x+g,y+g,w-2*g,h-2*g,r-g);
-  }else if(key==="freaky"){
-    // playful dashed line with small sparkles in the corners
-    ctx.setLineDash([14*s,10*s]);ctx.strokeRect(x,y,w,h);ctx.setLineDash([]);
-    const star=(cx,cy,R)=>{ctx.beginPath();ctx.moveTo(cx,cy-R);ctx.quadraticCurveTo(cx,cy,cx+R,cy);ctx.quadraticCurveTo(cx,cy,cx,cy+R);ctx.quadraticCurveTo(cx,cy,cx-R,cy);ctx.quadraticCurveTo(cx,cy,cx,cy-R);ctx.closePath();ctx.globalAlpha=0.7;ctx.fill();ctx.globalAlpha=0.55};
-    for(const [cx,cy] of [[x,y],[x+w,y],[x+w,y+h],[x,y+h]]){ctx.fillStyle="rgba(0,0,0,0)";star(cx,cy,14*s);ctx.fillStyle=color;star(cx,cy,14*s)}
-  }
-  ctx.restore();
+/* rubber stamp: round badge with the theme name around the ring, line icon in the middle,
+   slightly rotated and with a worn ink texture (seeded, so preview and download are identical) */
+function drawStamp(ctx,key,cx,cy,D,th,s){
+  if(!key||key==="none"||!THEME_ICON[key])return;
+  const size=Math.ceil(D*1.1),off=document.createElement("canvas");off.width=off.height=size;
+  const c=off.getContext("2d"),R=D/2,m=size/2,col=th.accent;
+  c.translate(m,m);
+  c.strokeStyle=col;c.fillStyle=col;c.lineCap="round";c.lineJoin="round";
+  c.lineWidth=5*s;c.beginPath();c.arc(0,0,R-3*s,0,Math.PI*2);c.stroke();
+  c.lineWidth=2*s;c.beginPath();c.arc(0,0,R-14*s,0,Math.PI*2);c.stroke();
+  c.lineWidth=2*s;c.beginPath();c.arc(0,0,R*0.56,0,Math.PI*2);c.stroke();
+  // ring text
+  const label=(th.name.toUpperCase()+"  ·  INBOXEAT  ·  ");
+  // fit the font size so the repeated label wraps the ring with natural, even tracking
+  const ringIn=R*0.56,ringOut=R-14*s;
+  let fs=Math.round((ringOut-ringIn)*0.42);
+  const setF=()=>{c.font=`600 ${fs}px Jost, 'Helvetica Neue', Arial, sans-serif`;try{c.letterSpacing="0px"}catch(e){}};setF();
+  const rText=(ringOut+ringIn)/2-fs*0.34, circ=2*Math.PI*rText;
+  let track=fs*0.22;
+  const w=t=>[...t].reduce((a,ch)=>a+c.measureText(ch).width+track,0);
+  let txt=label;while(w(txt+label)<=circ)txt+=label;
+  // shrink the font if one label is too long, otherwise close the gap with tracking
+  while(w(txt)>circ&&fs>8){fs-=1;setF();track=fs*0.22}
+  track+= (circ-w(txt))/[...txt].length;
+  const scale=1;
+  let ang=-Math.PI/2;
+  for(const ch of txt){const cw=(c.measureText(ch).width+track)*scale;ang+=cw/2/rText;
+    c.save();c.rotate(ang+Math.PI/2);c.translate(0,-rText);c.textAlign="center";c.textBaseline="middle";c.fillText(ch,0,0);c.restore();ang+=cw/2/rText}
+  // icon
+  const isz=R*0.72;c.save();c.translate(-isz/2,-isz/2);c.scale(isz/48,isz/48);c.lineWidth=2.6*48/isz*s*1.4;c.lineCap="round";c.lineJoin="round";
+  for(const d of THEME_ICON[key])c.stroke(new Path2D(d));c.restore();
+  // worn ink: knock out seeded speckles and a few streaks
+  let seed=0;for(const ch of key)seed=(seed*31+ch.charCodeAt(0))>>>0;
+  const rnd=()=>{seed=(seed*1664525+1013904223)>>>0;return seed/4294967296};
+  c.setTransform(1,0,0,1,0,0);c.globalCompositeOperation="destination-out";
+  for(let i=0;i<size*size/90;i++){const x=rnd()*size,y=rnd()*size,r=(0.4+rnd()*1.6)*s;c.globalAlpha=0.35+rnd()*0.6;c.beginPath();c.arc(x,y,r,0,Math.PI*2);c.fill()}
+  for(let i=0;i<6;i++){c.globalAlpha=0.18;c.lineWidth=(6+rnd()*14)*s;c.beginPath();const y=rnd()*size;c.moveTo(0,y);c.lineTo(size,y+(rnd()-0.5)*size*0.4);c.stroke()}
+  c.globalAlpha=1;c.globalCompositeOperation="source-over";
+  // place: slight rotation, multiply-like opacity
+  ctx.save();ctx.translate(cx,cy);ctx.rotate(-0.21);ctx.globalAlpha=0.88;ctx.drawImage(off,-size/2,-size/2);ctx.restore();
 }
 const WEEKDAY_THEME={1:"lactosa",2:"marisco",3:"gluten",4:"vegetariano",5:"freaky"};
 const autoThemeKey=iso=>WEEKDAY_THEME[new Date(iso+"T00:00:00Z").getUTCDay()]||"none";
@@ -404,9 +411,9 @@ function drawCard(ctx,W,H,img,textOnly){
     ctx.fillStyle="#8a8a8a";ctx.textAlign="center";ctx.font=`300 ${30*s}px Jost, Arial, sans-serif`;
     ctx.fillText("La ilustración aparece aquí",W/2,IH/2);
   }
-  // themed frame around the text area
-  {const fm=(state.aspect==="A4"?52:30)*s, ft=textOnly?fm:IH+fm;
-   drawThemeFrame(ctx,themeKey(),fm,ft,W-2*fm,H-ft-fm,s,dayTheme().accent);}
+  // themed rubber stamp: overlaps the lower edge of the illustration (or sits top right on the menu-only card)
+  {const D=(textOnly?200:220)*s, cx=W-D/2-30*s, cy=textOnly?D/2+30*s:IH+D/2+26*s;
+   drawStamp(ctx,themeKey(),cx,cy,D,dayTheme(),s);}
   // text block: editorial hierarchy (serif for dishes and prices, spaced sans for labels), scaled to fit below the image
   const S="Jost, 'Helvetica Neue', Arial, sans-serif";
   const isA4=state.aspect==="A4";
