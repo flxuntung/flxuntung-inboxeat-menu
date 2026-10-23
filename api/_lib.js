@@ -81,6 +81,15 @@ function buildPrompt(en) {
   return `Top-down flat-lay food illustration of a ${kind} lunch menu: ${list}. Delicate hand-drawn watercolor with fine ink outlines on warm off-white textured watercolor paper as the background, no table. Each dish is served in matte black ceramic bowls or on matte black plates, some with a black linen napkin or a small wooden board underneath; a few small side bowls with fresh herbs or a condiment that suits the dishes, a small water glass, a wooden spoon and a few scattered herb leaves as quiet accents. Show exactly ${n} main ${n === 1 ? "dish" : "dishes"}, one per menu item, each clearly recognizable and faithful to its name. The food looks freshly made and appetizing with rich natural colors that glow against the dark tableware: glossy sauces, golden crispy edges, fresh herbs. Balanced, evenly spaced composition that fills the frame with only small breathing space between the dishes; every dish completely inside the image, nothing cropped at the edges. Soft natural daylight from the upper left with gentle soft shadows, muted earthy palette with warm accents, refined editorial cookbook illustration. No text, no letters, no words, no hands.`;
 }
 
+// "Vegetable Soup" -> "Vegetable soup"; words capitalized in the Spanish source (Sacher, Spätzle) keep their capital.
+function sentenceCase(t, src) {
+  const keep = new Set(String(src || "").split(/\s+/).filter((w) => /^[A-ZÀ-Ý]/.test(w)).map((w) => w.toLowerCase().replace(/[^\p{L}]/gu, "")));
+  return t.split(" ").map((w, i) => {
+    const bare = w.toLowerCase().replace(/[^\p{L}]/gu, "");
+    if (i === 0 || keep.has(bare)) return w.charAt(0).toUpperCase() + w.slice(1);
+    return /^[A-Z][a-z]/.test(w) ? w.toLowerCase() : w;
+  }).join(" ");
+}
 // Translate Spanish dish names to short English menu lines.
 // Uses the Anthropic API when ANTHROPIC_API_KEY is set, otherwise MyMemory (free, literal).
 async function translate(esList) {
@@ -123,7 +132,7 @@ async function translate(esList) {
       const d = await r.json();
       let t = (d.responseData && d.responseData.translatedText) || "";
       if (!t || /MYMEMORY WARNING|QUERY LENGTH/i.test(t)) t = "";
-      out.push(t.replace(/\s+with\s+/gi, " & ").replace(/\s+and\s+/gi, " & "));
+      out.push(sentenceCase(t.replace(/\s+with\s+/gi, " & ").replace(/\s+and\s+/gi, " & "), s));
     } catch (e) { out.push(""); }
   }
   return out;
