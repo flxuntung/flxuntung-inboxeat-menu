@@ -4,7 +4,8 @@ Web-App für das Restaurant: Tagesgerichte auf Spanisch eintragen, Illustration 
 
 ## Aufbau
 
-- `public/index.html` Oberfläche (Spanisch), Logo `public/logo.png`
+- `api/public/index.html` Oberfläche (Spanisch), Logo `api/public/logo.png`
+- `api/api/*.js` Weiterleitungen, damit die App auch mit Root Directory `api` in Vercel läuft
 - `api/generate.js` übersetzt fehlende englische Zeilen, baut den Prompt, startet die Freepik-Aufgabe
 - `api/status.js` fragt den Stand der Aufgabe ab
 - `api/image.js` lädt das fertige Bild für den Browser (Canvas-Export)

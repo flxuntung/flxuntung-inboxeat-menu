@@ -1,0 +1,7 @@
+{
+  "name": "inboxeat-menu",
+  "version": "1.0.0",
+  "private": true,
+  "description": "Menú del día con ilustración (Inboxeat)",
+  "engines": { "node": ">=20" }
+}

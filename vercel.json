@@ -1,4 +1,5 @@
 {
+  "outputDirectory": "api/public",
   "functions": { "api/*.js": { "maxDuration": 30 } },
   "headers": [{ "source": "/(.*)", "headers": [{ "key": "X-Robots-Tag", "value": "noindex" }] }]
 }
