@@ -105,7 +105,8 @@ textarea{min-height:130px;border:1.5px solid var(--rule-soft);padding:10px;resiz
 
       <div class="field" style="max-width:140px">
         <label class="label" for="num">Número</label>
-        <input id="num" placeholder="#611">
+        <input id="num" placeholder="#611" aria-describedby="numHint">
+        <p class="hint" id="numHint">Se calcula solo (lunes a viernes). Corrígelo si hace falta.</p>
       </div>
 
       <div class="field">
@@ -209,15 +210,31 @@ function renderDishes(){
   });
   $("add").disabled=state.dishes.length>=6;
 }
+/* menu number: counts weekdays (Mon-Fri) from a reference menu; typing a number moves the reference */
+const REFKEY="inboxeat-numref";
+let numRef={date:"2026-10-22",num:610};
+try{const r=JSON.parse(localStorage.getItem(REFKEY)||"null");if(r&&r.date&&r.num)numRef=r}catch(e){}
+function weekdaysBetween(a,b){
+  const d0=new Date(a+"T00:00:00Z"),d1=new Date(b+"T00:00:00Z");const sign=d1>=d0?1:-1;let n=0;
+  for(let d=new Date(d0);sign>0?d<d1:d>d1;d.setUTCDate(d.getUTCDate()+sign)){const t=new Date(d);t.setUTCDate(t.getUTCDate()+(sign>0?1:0));const wd=(sign>0?t:d).getUTCDay();if(wd>0&&wd<6)n+=sign}
+  return n;
+}
+const autoNum=date=>"#"+(numRef.num+weekdaysBetween(numRef.date,date));
+function applyAutoNum(){if(!state.numManual){state.num=autoNum(state.date);$("num").value=state.num}}
 function fillForm(){$("date").value=state.date;$("num").value=state.num;$("aspect").value=state.aspect;renderDishes();renderCard()}
-$("date").onchange=e=>{if(e.target.value){state.date=e.target.value;renderCard();save()}};
-$("num").oninput=e=>{state.num=e.target.value;renderCard();save()};
+$("date").onchange=e=>{if(e.target.value){state.date=e.target.value;state.numManual=false;applyAutoNum();renderCard();save()}};
+$("num").oninput=e=>{
+  state.num=e.target.value;const n=parseInt(state.num.replace(/\D/g,""),10);
+  state.numManual=!!state.num.trim();
+  if(n){numRef={date:state.date,num:n};try{localStorage.setItem(REFKEY,JSON.stringify(numRef))}catch(x){}}
+  renderCard();save();
+};
+$("num").onblur=()=>{if(!state.num.trim()){state.numManual=false;applyAutoNum();renderCard();save()}};
 $("aspect").onchange=e=>{state.aspect=e.target.value;renderCard();save()};
 $("add").onclick=()=>{state.dishes.push({es:"",en:"",auto:true});renderDishes();save();$("es-"+(state.dishes.length-1)).focus()};
 $("newMenu").onclick=()=>{
-  const n=parseInt(String(state.num||"").replace(/\D/g,""),10);
-  state={...state,date:todayISO(),num:n?"#"+(n+1):"",dishes:[{es:"",en:"",auto:true}],image:null,imageSig:""};
-  fillForm();save();setMsg("msg","");$("es-0").focus();
+  state={...state,date:todayISO(),numManual:false,dishes:[{es:"",en:"",auto:true}],image:null,imageSig:""};
+  applyAutoNum();fillForm();save();setMsg("msg","");$("es-0").focus();
 };
 $("parse").onclick=()=>{
   const lines=$("paste").value.split(/\n/).map(l=>l.trim()).filter(Boolean);
@@ -233,7 +250,7 @@ $("parse").onclick=()=>{
   if(blocks.length>1)dishes=blocks.filter(b=>b.length).map(b=>({es:b[0],en:b[1]||"",auto:!b[1]}));
   else dishes=blocks[0].map(l=>({es:l,en:"",auto:true}));
   if(!dishes.length){setMsg("msg","No se encontraron platos en el texto.","err");return}
-  state.dishes=dishes.slice(0,6);if(num)state.num=num;
+  state.dishes=dishes.slice(0,6);if(num){state.num=num;state.numManual=true;const n=parseInt(num.replace(/\D/g,""),10);if(n){numRef={date:state.date,num:n};try{localStorage.setItem(REFKEY,JSON.stringify(numRef))}catch(x){}}}
   fillForm();save();$("pasteBox").open=false;setMsg("msg",state.dishes.length+" platos cargados.","ok");
 };
 
@@ -272,7 +289,7 @@ function drawCard(ctx,W,H,img){
     let y=y0;ctx.textAlign="center";
     const line=(t,size,lh,color)=>{ctx.font=`400 ${size*k}px ${F}`;for(const l of wrap(ctx,t,maxW)){y+=lh*k;if(go){ctx.fillStyle=color||"#111";ctx.fillText(l,W/2,y)}}};
     line(fmtDate(state.date),62,64);
-    if(state.num){y+=6*k;line(state.num,30,40)}
+    if(state.num){y+=8*k;line("Menú "+state.num.replace(/^\s*(men[uú]\s*)?/i,""),34,44,"#333")}
     y+=22*k;
     dishes.forEach((d,i)=>{if(i>0){line("+",34,40,"#8a8a8a")}if(d.es)line(d.es,34,42);if(d.en)line(d.en,30,38,"#333")});
     y+=34*k;const cw=(W-2*pad)/3;
@@ -352,7 +369,8 @@ $("dl").onclick=async()=>{setMsg("dlMsg","Preparando…");try{download(await ren
 $("dlIll").onclick=async()=>{if(!state.image)return;const b=await (await fetch(state.image)).blob();download(b,"ilustracion-"+state.date+".png")};
 
 /* ---------- boot ---------- */
-fillForm();
+if(state.numManual===undefined)state.numManual=!!(state.num&&state.num.trim());
+fillForm();applyAutoNum();renderCard();
 if(pw)enter();else{$("gate").hidden=false}
 </script>
 </body>
