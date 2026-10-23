@@ -193,6 +193,7 @@ textarea{min-height:130px;border:1.5px solid var(--rule-soft);padding:10px;resiz
         <h2 id="ch">Carta</h2>
         <div class="row">
           <button type="button" class="link" id="dlIll" disabled>Solo ilustración</button>
+          <button type="button" class="btn ghost" id="dlMenu">Solo menú</button>
           <button type="button" class="btn ghost" id="redo" hidden>Otra ilustración</button>
           <button type="button" class="btn" id="dl">Descargar carta</button>
         </div>
@@ -340,12 +341,13 @@ const themeKey=()=>(state.theme&&state.theme!=="auto"&&THEMES[state.theme])?stat
 const dayTheme=()=>THEMES[themeKey()];
 const dayTint=()=>dayTheme().bg;
 // Draws the whole card at width W x height H. Layout is proportional, so preview and download match.
-function drawCard(ctx,W,H,img){
+function drawCard(ctx,W,H,img,textOnly){
   const f=fmt();const [rw,rh]=f.img.split(":").map(Number);
-  const s=W/1080, IH=Math.round(W*rh/rw);
+  const s=W/1080, IH=textOnly?Math.round(70*W/1080):Math.round(W*rh/rw);
   ctx.fillStyle=dayTint();ctx.fillRect(0,0,W,H);
-  // illustration, cover-cropped into the top box
-  if(img){
+  // illustration, cover-cropped into the top box (skipped for the text-only menu)
+  if(textOnly){}
+  else if(img){
     const r=Math.max(W/img.naturalWidth,IH/img.naturalHeight),sw=W/r,sh=IH/r;
     ctx.drawImage(img,(img.naturalWidth-sw)/2,(img.naturalHeight-sh)/2,sw,sh,0,0,W,IH);
   }else{
@@ -423,6 +425,7 @@ function renderCard(){
   if(stale){note.hidden=false;note.textContent=(state.aspectUsed&&state.aspectUsed!==fmt().img)?"Formato cambiado: la ilustración se recorta. Crea una nueva para que encaje bien.":"Platos cambiados: la ilustración ya no coincide. Crea una nueva."}
   else note.hidden=true;
   $("dlIll").disabled=!state.image;
+  $("dlMenu").hidden=state.aspect!=="4:5";
   $("go").textContent=stale?"Crear ilustración nueva":(state.image?"Crear otra ilustración":"Crear ilustración");
   $("redo").hidden=!state.image||isPhone();
   syncBar();
@@ -477,19 +480,20 @@ async function toJpegDataUrl(blob){
 }
 /* ---------- download ---------- */
 async function loadImg(src){const im=new Image();im.src=src;await im.decode();return im}
-async function renderPNG(){
+async function renderPNG(textOnly){
   try{await Promise.all(["400 40px 'Old Standard TT'","300 24px Jost","400 18px Jost","500 21px Jost"].map(f=>document.fonts.load(f)).concat([document.fonts.ready]))}catch(e){}
   const img=state.image?await loadImg(state.image).catch(()=>null):null;
   const f=fmt(),c=document.createElement("canvas");c.width=f.W;c.height=f.H;
-  drawCard(c.getContext("2d"),f.W,f.H,img);
+  drawCard(c.getContext("2d"),f.W,f.H,img,textOnly);
   return new Promise(res=>c.toBlob(res,"image/png"));
 }
 function download(blob,name){const a=document.createElement("a");a.href=URL.createObjectURL(blob);a.download=name;document.body.appendChild(a);a.click();setTimeout(()=>{URL.revokeObjectURL(a.href);a.remove()},2000)}
 const isPhone=()=>matchMedia("(max-width:640px)").matches;
-async function saveCard(){
+async function saveCard(textOnly){
   setMsg("dlMsg","Preparando…");
   try{
-    const blob=await renderPNG();const name="menu-"+state.date+"-"+state.aspect.replace(":","x")+".png";
+    textOnly=textOnly===true;
+    const blob=await renderPNG(textOnly);const name="menu-"+state.date+"-"+state.aspect.replace(":","x")+(textOnly?"-solo-menu":"")+".png";
     const file=new File([blob],name,{type:"image/png"});
     if(isPhone()&&navigator.canShare&&navigator.canShare({files:[file]})){
       try{await navigator.share({files:[file],title:"Menú del día"});setMsg("dlMsg","Listo.","ok");return}
@@ -498,7 +502,8 @@ async function saveCard(){
     download(blob,name);setMsg("dlMsg","Carta descargada.","ok");
   }catch(e){setMsg("dlMsg","No se pudo crear la imagen.","err")}
 }
-$("dl").onclick=saveCard;
+$("dl").onclick=()=>saveCard(false);
+$("dlMenu").onclick=()=>saveCard(true);
 /* mobile bar: main action is "create" until an up-to-date image exists, then "save/share" */
 function syncBar(){
   const ready=!!state.image&&!isStale();
