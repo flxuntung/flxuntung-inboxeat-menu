@@ -371,25 +371,25 @@ function drawCard(ctx,W,H,img){
     const text=(t,font,ls,size,lh,color,x)=>{set(font,ls*k);for(const l of wrap(ctx,t,maxW)){y+=lh*k;if(go){ctx.fillStyle=color;ctx.fillText(l,x??W/2,y)}}};
     if(!skipTop){
       const th=dayTheme();
-      if(th.name){text(th.name.toUpperCase(),`500 ${26*k}px ${S}`,7.5,26,30,th.accent);y+=12*k}
-      if(numTxt){text("MENÚ  Nº "+numTxt,`400 ${18*k}px ${S}`,5.5,18,24,"#8a8a8a")}
-      y+=26*k+ex*0.5;
-      text(fmtDate(state.date),`400 ${66*k}px ${F}`,0,66,64,"#111");
-      y+=40*k+ex;
+      if(th.name){text(th.name.toUpperCase(),`500 ${28*k}px ${S}`,8,28,32,th.accent);y+=12*k}
+      if(numTxt){text("MENÚ  Nº "+numTxt,`400 ${19*k}px ${S}`,5.5,19,26,"#7a7a7a")}
+      y+=28*k+ex*0.5;
+      text(fmtDate(state.date),`400 ${78*k}px ${F}`,0,78,76,"#111");
+      y+=44*k+ex;
       dishes.forEach((d,i)=>{
-        if(i>0){y+=12*k+ex;text("+",`400 ${30*k}px ${F}`,0,30,30,dayTheme().accent);y+=10*k+ex}
-        text(d.es,`400 ${38*k}px ${F}`,0,38,46,"#111");
-        if(d.en)text(d.en,`300 ${26*k}px ${S}`,1,26,30,"#4a4a4a");
+        if(i>0){y+=12*k+ex;text("+",`400 ${34*k}px ${F}`,0,34,34,dayTheme().accent);y+=10*k+ex}
+        text(d.es,`400 ${46*k}px ${F}`,0,46,54,"#111");
+        if(d.en)text(d.en,`300 ${29*k}px ${S}`,1,29,36,"#444444");
       });
     }
     if(part==="top")return y-y0;
-    y+=(part==="bottom"?0:52)*k;
+    y+=(part==="bottom"?0:56)*k;
     const cw=(W-2*pad)/3;
     PRICES.forEach((p,i)=>{const x=pad+cw*i+cw/2;
-      if(go){ctx.fillStyle="#111";set(`400 ${36*k}px ${F}`,0);try{ctx.fontVariantNumeric="tabular-nums"}catch(e){}ctx.fillText(p.amount,x,y+38*k);
-        ctx.fillStyle="#6b6b6b";set(`400 ${18*k}px ${S}`,4*k);ctx.fillText(p.label.toUpperCase(),x,y+70*k)}});
-    y+=70*k;y+=24*k;
-    text(FOOT.replace(/\s+(\d)/," · $1").toUpperCase(),`400 ${19*k}px ${S}`,5,19,40,"#8a8a8a");
+      if(go){ctx.fillStyle="#111";set(`400 ${42*k}px ${F}`,0);try{ctx.fontVariantNumeric="tabular-nums"}catch(e){}ctx.fillText(p.amount,x,y+44*k);
+        ctx.fillStyle="#666666";set(`400 ${20*k}px ${S}`,4.5*k);ctx.fillText(p.label.toUpperCase(),x,y+80*k)}});
+    y+=80*k;y+=26*k;
+    text(FOOT.replace(/\s+(\d)/," · $1").toUpperCase(),`400 ${21*k}px ${S}`,5.5,21,44,"#7a7a7a");
     set(ctx.font,0);
     return y-y0;
   }
@@ -397,12 +397,12 @@ function drawCard(ctx,W,H,img){
   // 3) spare space goes into the course gaps up to a cap, the rest stays between dishes and prices
   const avail=H-top-bottomPad;
   const need=layout(s,false,0);
-  const k=s*Math.min(1.2,avail/need);
-  const gap=52*k;
+  const k=s*Math.min(1.45,avail/need);
+  const gap=56*k;
   const hTop=layout(k,false,0,"top"), hBot=layout(k,false,0,"bottom");
   const free=Math.max(0,avail-hTop-hBot-gap);
   const slots=1.5+Math.max(0,dishes.length-1)*2;       // weights used in layout(): 0.5 + 1 + 2 per course gap
-  const extra=Math.min(22*k,free/slots);
+  const extra=Math.min(14*k,free/slots);
   layout(k,true,top,"top",extra);
   layout(k,true,H-bottomPad-hBot,"bottom",0);
 }
