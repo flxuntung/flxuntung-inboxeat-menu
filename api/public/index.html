@@ -306,8 +306,15 @@ function wrap(ctx,text,max){const words=String(text).split(/\s+/);const lines=[]
 const isStale=()=>!!state.image&&(state.imageSig!==sig(state.dishes)||(state.aspectUsed&&state.aspectUsed!==fmt().img));
 
 /* very subtle pastel tint per weekday theme: Mon sin lactosa, Tue marisco, Wed sin gluten, Thu vegetariano, Fri freaky friday */
-const DAY_TINT={1:"#f1f4f8",2:"#eef5f4",3:"#f8f4ea",4:"#f0f5ec",5:"#faf0ec"};
-const dayTint=iso=>DAY_TINT[new Date(iso+"T00:00:00Z").getUTCDay()]||"#ffffff";
+const DAY_THEME={
+  1:{bg:"#e8eef6",accent:"#56708f",name:"Sin lactosa"},
+  2:{bg:"#e3f0ee",accent:"#3c7a74",name:"Marisco"},
+  3:{bg:"#f5eedd",accent:"#93743a",name:"Sin gluten"},
+  4:{bg:"#e7f0e1",accent:"#587a47",name:"Vegetariano"},
+  5:{bg:"#f8e6de",accent:"#ad6249",name:"Freaky Friday · Finger food"}
+};
+const dayTheme=iso=>DAY_THEME[new Date(iso+"T00:00:00Z").getUTCDay()]||{bg:"#ffffff",accent:"#8a8a8a",name:""};
+const dayTint=iso=>dayTheme(iso).bg;
 // Draws the whole card at width W x height H. Layout is proportional, so preview and download match.
 function drawCard(ctx,W,H,img){
   const f=fmt();const [rw,rh]=f.img.split(":").map(Number);
@@ -334,12 +341,14 @@ function drawCard(ctx,W,H,img){
     const rule=(w,color)=>{if(go){ctx.fillStyle=color;ctx.fillRect(W/2-w*k/2,y,w*k,Math.max(1,1.5*k))}};
     // header
     if(!skipTop){
-    if(numTxt){text("MENÚ  Nº "+numTxt,`500 ${21*k}px ${S}`,6.5,21,26,"#8a8a8a");y+=16*k}
+    const th=dayTheme(state.date);
+    if(th.name){text(th.name.toUpperCase(),`500 ${24*k}px ${S}`,7,24,28,th.accent);y+=10*k}
+    if(numTxt){text("MENÚ  Nº "+numTxt,`400 ${19*k}px ${S}`,6,19,26,"#8a8a8a");y+=14*k}
     text(fmtDate(state.date),`400 ${66*k}px ${F}`,0,66,64,"#111");
     y+=34*k;
     // dishes
     dishes.forEach((d,i)=>{
-      if(i>0){y+=6*k;text("+",`300 ${32*k}px ${S}`,0,32,32,"#9a9a9a");y+=4*k}
+      if(i>0){y+=6*k;text("+",`300 ${32*k}px ${S}`,0,32,32,dayTheme(state.date).accent);y+=4*k}
       if(d.es)text(d.es,`400 ${38*k}px ${F}`,0,38,46,"#111");
       if(d.en)text(d.en,`300 ${26*k}px ${S}`,1,26,34,"#5f5f5f");
     });
