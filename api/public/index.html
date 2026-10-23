@@ -305,11 +305,14 @@ function wrap(ctx,text,max){const words=String(text).split(/\s+/);const lines=[]
   for(const w of words){const t=cur?cur+" "+w:w;if(ctx.measureText(t).width>max&&cur){lines.push(cur);cur=w}else cur=t}if(cur)lines.push(cur);return lines}
 const isStale=()=>!!state.image&&(state.imageSig!==sig(state.dishes)||(state.aspectUsed&&state.aspectUsed!==fmt().img));
 
+/* very subtle pastel tint per weekday theme: Mon sin lactosa, Tue marisco, Wed sin gluten, Thu vegetariano, Fri freaky friday */
+const DAY_TINT={1:"#f1f4f8",2:"#eef5f4",3:"#f8f4ea",4:"#f0f5ec",5:"#faf0ec"};
+const dayTint=iso=>DAY_TINT[new Date(iso+"T00:00:00Z").getUTCDay()]||"#ffffff";
 // Draws the whole card at width W x height H. Layout is proportional, so preview and download match.
 function drawCard(ctx,W,H,img){
   const f=fmt();const [rw,rh]=f.img.split(":").map(Number);
   const s=W/1080, IH=Math.round(W*rh/rw);
-  ctx.fillStyle="#fff";ctx.fillRect(0,0,W,H);
+  ctx.fillStyle=dayTint(state.date);ctx.fillRect(0,0,W,H);
   // illustration, cover-cropped into the top box
   if(img){
     const r=Math.max(W/img.naturalWidth,IH/img.naturalHeight),sw=W/r,sh=IH/r;
