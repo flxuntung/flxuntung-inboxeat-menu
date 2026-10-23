@@ -181,6 +181,7 @@ textarea{min-height:130px;border:1.5px solid var(--rule-soft);padding:10px;resiz
         </div>
       </div>
       <div class="cardwrap"><canvas id="cardCanvas" aria-label="Vista previa de la carta"></canvas></div>
+      <p class="hint" id="staleNote" hidden></p>
       <p class="msg" id="dlMsg" role="status"></p>
     </section>
   </div>
@@ -313,7 +314,6 @@ function drawCard(ctx,W,H,img){
   if(img){
     const r=Math.max(W/img.naturalWidth,IH/img.naturalHeight),sw=W/r,sh=IH/r;
     ctx.drawImage(img,(img.naturalWidth-sw)/2,(img.naturalHeight-sh)/2,sw,sh,0,0,W,IH);
-    if(isStale()){ctx.fillStyle="rgba(255,255,255,.55)";ctx.fillRect(0,0,W,IH)}
   }else{
     ctx.fillStyle="#f4f4f2";ctx.fillRect(0,0,W,IH);
     ctx.fillStyle="#8a8a8a";ctx.textAlign="center";ctx.font=`300 ${30*s}px Jost, Arial, sans-serif`;
@@ -365,6 +365,9 @@ function renderCard(){
     drawCard(c.getContext("2d"),PW,PH,getImg(state.image));
   });
   const stale=isStale();
+  const note=$("staleNote");
+  if(stale){note.hidden=false;note.textContent=(state.aspectUsed&&state.aspectUsed!==fmt().img)?"Formato cambiado: la ilustración se recorta. Crea una nueva para que encaje bien.":"Platos cambiados: la ilustración ya no coincide. Crea una nueva."}
+  else note.hidden=true;
   $("dlIll").disabled=!state.image;
   $("go").textContent=stale?"Crear ilustración nueva":"Crear ilustración";
   syncBar();
