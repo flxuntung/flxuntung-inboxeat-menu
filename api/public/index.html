@@ -176,10 +176,9 @@ textarea{min-height:130px;border:1.5px solid var(--rule-soft);padding:10px;resiz
         <select id="aspect">
           <option value="4:5">Instagram post · 4:5 (1080 × 1350)</option>
           <option value="9:16">Story / WhatsApp · 9:16 (1080 × 1920)</option>
-          <option value="A4">A4 para imprimir (2480 × 3508)</option>
         </select>
         <p class="hint">La ilustración se crea a la medida del formato. Si cambias el formato, crea una ilustración nueva.</p>
-        <p class="hint" id="postHint" hidden>Instagram post: solo el menú, sin ilustración. Para la ilustración elige Story o A4.</p>
+        <p class="hint" id="postHint" hidden>Instagram post: solo el menú, sin ilustración. Para la ilustración elige Story.</p>
       </div>
 
       <div class="row">
@@ -227,7 +226,7 @@ let pw="";
 try{pw=localStorage.getItem(PWKEY)||""}catch(e){}
 try{const s=JSON.parse(localStorage.getItem(KEY)||"null");if(s&&s.dishes)state={...state,...s}}catch(e){}
 const save=()=>{try{localStorage.setItem(KEY,JSON.stringify(state))}catch(e){console.warn("no se pudo guardar el estado",e)}};
-const FORMATS={"4:5":{W:1080,H:1350,img:"16:9"},"9:16":{W:1080,H:1920,img:"16:9"},"A4":{W:2480,H:3508,img:"16:9"}};
+const FORMATS={"4:5":{W:1080,H:1350,img:"16:9"},"9:16":{W:1080,H:1920,img:"16:9"}};
 if(!FORMATS[state.aspect])state.aspect="4:5";
 const fmt=()=>FORMATS[state.aspect]||FORMATS["4:5"];
 const sig=d=>JSON.stringify(d.map(x=>(x.es||"").trim().toLowerCase()).filter(Boolean));
@@ -397,7 +396,7 @@ const themeKey=()=>(state.theme&&state.theme!=="auto"&&THEMES[state.theme])?stat
 const dayTheme=()=>THEMES[themeKey()];
 const dayTint=()=>dayTheme().bg;
 // Draws the whole card at width W x height H. Layout is proportional, so preview and download match.
-// The Instagram post (4:5) is the reference: text only, 1080x1350. Story and A4 reuse its text size;
+// The Instagram post (4:5) is the reference: text only, 1080x1350. Story reuses its text size;
 // if needed the illustration gets a little shorter (never below 16:9) so the text keeps that size.
 function drawCard(ctx,W,H,img,textOnly){
   const f=fmt();const [rw,rh]=f.img.split(":").map(Number);
@@ -405,8 +404,7 @@ function drawCard(ctx,W,H,img,textOnly){
   let IH=textOnly?Math.round(70*s):Math.round(W*rh/rw);
   // text block: editorial hierarchy (serif for dishes and prices, spaced sans for labels), scaled to fit below the image
   const S="Jost, 'Helvetica Neue', Arial, sans-serif";
-  const isA4=state.aspect==="A4";
-  const pad=(isA4?96:64)*s, bottomPad=isA4?pad*1.2:pad*1.1, maxW=W-2*pad*1.45;
+  const pad=64*s, bottomPad=pad*1.1, maxW=W-2*pad*1.45;
   const dishes=state.dishes.filter(x=>x.es||x.en).map(d=>{
     const es=(d.es||"").trim(),en=(d.en||"").trim();
     const same=es&&en&&es.toLowerCase().replace(/[^\p{L}\p{N}]/gu,"")===en.toLowerCase().replace(/[^\p{L}\p{N}]/gu,"");
@@ -451,7 +449,7 @@ function drawCard(ctx,W,H,img,textOnly){
   const rRef=Math.min(1.3,((1350-70-64*0.6-64*1.1)*s)/need);
   if(!textOnly){
     const ihMax=H-pad*0.6-bottomPad-need*rRef;
-    IH=Math.round(Math.max(W*(isA4?0.5:9/16),Math.min(IH,ihMax)));
+    IH=Math.round(Math.max(W*9/16,Math.min(IH,ihMax)));
   }
   const top=IH+pad*0.6, avail=H-top-bottomPad;
   ctx.fillStyle=dayTint();ctx.fillRect(0,0,W,H);
@@ -504,7 +502,7 @@ try{Promise.all(["400 40px 'Old Standard TT'","300 24px Jost","400 18px Jost","5
 let running=false;
 $("form").addEventListener("submit",async e=>{
   e.preventDefault();if(running)return;
-  if(state.aspect==="4:5"){setMsg("msg","Instagram post no lleva ilustración. Elige Story o A4.","err");return}
+  if(state.aspect==="4:5"){setMsg("msg","Instagram post no lleva ilustración. Elige Story.","err");return}
   const dishes=state.dishes.filter(d=>d.es.trim()||d.en.trim());
   if(!dishes.length){setMsg("msg","Añade al menos un plato.","err");return}
   running=true;$("go").disabled=true;syncBar();const prog=$("prog");prog.hidden=false;const bar=prog.firstElementChild;bar.style.width="4%";
