@@ -376,13 +376,13 @@ function drawCard(ctx,W,H,img,textOnly){
       const th=dayTheme();
       if(th.name){text(th.name.toUpperCase(),28,500,S,8,32,th.accent,kf);y+=12*kf}
       if(numTxt){text("MENÚ  Nº "+numTxt,19,400,S,5.5,26,"#6f6f6f",kf)}
-      y+=28*kf+ex*0.5;
-      text(fmtDate(state.date),76,400,F,0,74,"#111",kf);
-      y+=44*kf+ex;
+      y+=24*kf+ex*0.5;
+      text(fmtDate(state.date),70,400,F,0,70,"#111",kf);
+      y+=34*kf+ex;
       dishes.forEach((d,i)=>{
-        if(i>0){y+=12*kd+ex;text("+",32,400,F,0,32,dayTheme().accent,kd);y+=10*kd+ex}
-        text(d.es,52,400,F,0,58,"#111",kd);
-        if(d.en)text(d.en,31,400,S,0.5,38,"#3d3d3d",kd);
+        if(i>0){y+=20*kd+ex;text("+",30,400,F,0,30,dayTheme().accent,kd);y+=6*kd+ex}
+        text(d.es,50,400,F,0,58,"#111",kd);
+        if(d.en)text(d.en,29,400,S,0.3,46,"#4a4a4a",kd);
       });
     }
     if(part==="top")return y-y0;
