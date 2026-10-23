@@ -1,7 +1,7 @@
 const L = require("./_lib");
 
 // GET /api/image?url=...  Proxies a generated image so the browser can draw it on a canvas.
-const ALLOWED = /(^|\.)(cdnpk\.net|freepik\.com|magnific\.com|freepikcompany\.com)$/i;
+const ALLOWED = /(^|\.)(cdnpk\.net|freepik\.com|magnific\.com|freepikcompany\.com|googleapis\.com|googleusercontent\.com|amazonaws\.com|cloudfront\.net|r2\.dev)$/i;
 
 module.exports = async (req, res) => {
   if (!L.checkPassword(req, res)) return;

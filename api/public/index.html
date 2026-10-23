@@ -298,9 +298,12 @@ $("form").addEventListener("submit",async e=>{
     }
     if(!images.length)throw new Error("Tiempo de espera agotado. Inténtalo de nuevo.");
     setMsg("msg","Descargando la imagen…");
-    const r=await api("/api/image?url="+encodeURIComponent(images[0]));
-    const blob=await r.blob();
-    const dataUrl=await new Promise(res=>{const fr=new FileReader();fr.onload=()=>res(fr.result);fr.readAsDataURL(blob)});
+    let dataUrl=images[0];
+    try{
+      const r=await api("/api/image?url="+encodeURIComponent(images[0]));
+      const blob=await r.blob();
+      dataUrl=await new Promise(res=>{const fr=new FileReader();fr.onload=()=>res(fr.result);fr.readAsDataURL(blob)});
+    }catch(x){console.warn("image proxy failed",x)}
     state.image=dataUrl;state.imageSig=sig(state.dishes);state.aspectUsed=state.aspect;
     renderCard();save();bar.style.width="100%";
     setMsg("msg","Ilustración lista.","ok");
