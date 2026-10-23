@@ -64,15 +64,24 @@ button:disabled{opacity:.35;cursor:default}
 
 /* dishes */
 .dishes{display:grid}
-.dish{display:grid;grid-template-columns:28px minmax(0,1fr) 28px;gap:12px;align-items:start;padding:12px 0;border-bottom:1.5px solid var(--rule-soft)}
-.dish:first-child{padding-top:0}
+.dish{display:grid;grid-template-columns:28px minmax(0,1fr) 28px 28px;gap:12px;align-items:start;padding:12px 8px;margin:0 -8px;border-bottom:1.5px solid var(--rule-soft);transition:background .15s}
+.dish:hover,.dish:focus-within{background:var(--wash)}
 .dish .n{font-family:var(--serif);font-size:17px;line-height:38px;color:var(--ink-soft);text-align:left}
 .dish .pair{display:grid;gap:0;min-width:0}
-.dish input{border:0;padding:0}
-.dish input.es{font-family:var(--serif);font-size:20px;line-height:38px}
-.dish input.en{font-size:13px;color:var(--ink-soft);line-height:24px}
-.x{width:28px;height:38px;border:0;background:none;color:#b4b4b0;font-size:20px;letter-spacing:0;padding:0}
+.dish input{border:0;padding:0;background:transparent}
+.dish input.es{font-family:var(--serif);font-size:20px;line-height:38px;border-bottom:1px dashed #cfcfcb;border-radius:0}
+.dish input.es:focus{border-bottom:1.5px solid var(--ink)}
+.dish input.en{font-size:13px;color:var(--ink-soft);line-height:26px;margin-top:2px;border-bottom:1px dashed transparent}
+.dish:hover input.en,.dish:focus-within input.en{border-bottom-color:#d8d8d4}
+.dish input.en:focus{border-bottom:1.5px solid var(--ink);color:var(--ink)}
+.dish .pen{width:28px;height:38px;display:grid;place-items:center;color:#b4b4b0;opacity:0;transition:opacity .15s}
+.dish:hover .pen{opacity:1}
+.dish:focus-within .pen{opacity:0}
+.dish .pen svg{width:14px;height:14px;stroke:currentColor;fill:none;stroke-width:1.5;stroke-linecap:round;stroke-linejoin:round}
+.x{width:28px;height:38px;border:0;background:none;color:#b4b4b0;font-size:20px;letter-spacing:0;padding:0;opacity:.6}
+.dish:hover .x,.dish:focus-within .x{opacity:1}
 .x:hover{color:var(--ink)}
+@media (hover:none){.dish .pen{opacity:.7}.dish .x{opacity:1}}
 .addrow{display:flex;justify-content:space-between;align-items:center;gap:16px;padding-top:4px}
 details{display:grid;gap:12px}
 summary{list-style:none;cursor:pointer}
@@ -119,6 +128,7 @@ h2{font-weight:400;letter-spacing:.22em;text-transform:uppercase;font-size:11px;
   .step .n b{display:inline;margin-right:8px}
   .fields{grid-template-columns:minmax(0,1fr) 100px;gap:20px}
   input,select,textarea{font-size:16px}
+  .dish{grid-template-columns:24px minmax(0,1fr) 24px 28px;gap:8px}
   .dish input.es{font-size:19px}
   .dish input.en{font-size:15px}
   .seg{max-width:none}
@@ -204,7 +214,7 @@ h2{font-weight:400;letter-spacing:.22em;text-transform:uppercase;font-size:11px;
               <p class="hint">Un plato por línea o separados por "+".</p>
             </div>
           </div>
-          <p class="hint">El inglés se traduce solo y se puede corregir.</p>
+          <p class="hint">Toca un plato para cambiarlo. El inglés se traduce solo y también se puede corregir.</p>
         </div>
       </section>
 
@@ -222,9 +232,10 @@ h2{font-weight:400;letter-spacing:.22em;text-transform:uppercase;font-size:11px;
       </section>
 
       <section class="step action" id="actionStep">
-        <div class="n"></div>
+        <div class="n"><b>04</b>Listo</div>
         <div class="body">
-          <div><button type="submit" class="btn" id="go">Crear ilustración</button></div>
+          <div id="storyAction"><button type="submit" class="btn" id="go">Crear ilustración</button></div>
+          <p class="hint" id="postReady" hidden>La carta está lista. Descárgala desde la vista previa.</p>
           <div class="progress" id="prog" hidden><i></i></div>
           <p class="msg" id="msg" role="status"></p>
         </div>
@@ -298,15 +309,18 @@ function renderDishes(){
     const row=document.createElement("div");row.className="dish";
     const n=document.createElement("div");n.className="n";n.textContent=i+1;
     const pair=document.createElement("div");pair.className="pair";
-    const es=document.createElement("input");es.className="es";es.id="es-"+i;es.value=d.es;es.placeholder="Plato";es.setAttribute("aria-label","Plato "+(i+1));
-    const en=document.createElement("input");en.className="en";en.id="en-"+i;en.value=d.en;en.placeholder="English";en.setAttribute("aria-label","Plato "+(i+1)+" en inglés");
+    const es=document.createElement("input");es.className="es";es.id="es-"+i;es.value=d.es;es.placeholder="Escribe el plato";es.setAttribute("aria-label","Plato "+(i+1));
+    const en=document.createElement("input");en.className="en";en.id="en-"+i;en.value=d.en;en.placeholder="English · se rellena solo";en.setAttribute("aria-label","Plato "+(i+1)+" en inglés");
     es.oninput=()=>{d.es=es.value;d.en="";d.auto=true;en.value="";renderCard();save()};
     es.onkeydown=e=>{if(e.key==="Enter"){e.preventDefault();if(i===state.dishes.length-1&&state.dishes.length<6)$("add").click();else{const nx=$("es-"+(i+1));if(nx)nx.focus()}}};
     en.oninput=()=>{d.en=en.value;d.auto=!en.value;renderCard();save()};
     pair.append(es,en);
+    const pen=document.createElement("span");pen.className="pen";pen.setAttribute("aria-hidden","true");
+    pen.innerHTML='<svg viewBox="0 0 24 24"><path d="M4 20h4l10.5-10.5a2.1 2.1 0 0 0-3-3L5 17z"/><path d="M13.5 6.5l3 3"/></svg>';
+    pen.onclick=()=>es.focus();
     const x=document.createElement("button");x.type="button";x.className="x";x.textContent="×";x.setAttribute("aria-label","Quitar plato "+(i+1));
     x.disabled=state.dishes.length<=1;x.onclick=()=>{state.dishes.splice(i,1);renderDishes();renderCard();save()};
-    row.append(n,pair,x);box.appendChild(row);
+    row.append(n,pair,pen,x);box.appendChild(row);
   });
   $("add").disabled=state.dishes.length>=6;
 }
@@ -537,7 +551,7 @@ function renderCard(){
   const post=state.aspect==="4:5";
   $("prog").hidden=post||$("prog").hidden;
   $("dlIll").hidden=post;
-  $("postHint").hidden=!post;$("storyHint").hidden=post;$("actionStep").hidden=post;
+  $("postHint").hidden=!post;$("storyHint").hidden=post;$("storyAction").hidden=post;$("postReady").hidden=!post;
   $("go").textContent=stale?"Crear ilustración nueva":(state.image?"Crear otra ilustración":"Crear ilustración");
   $("redo").hidden=!state.image||isPhone()||state.aspect==="4:5";
   syncBar();
