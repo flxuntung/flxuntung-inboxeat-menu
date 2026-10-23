@@ -6,7 +6,7 @@ module.exports = async (req, res) => {
   L.json(res, 200, {
     ok: true,
     model: L.modelPath(),
-    resolution: L.env("IMAGE_RESOLUTION", "1k"),
+    resolution: L.env("IMAGE_RESOLUTION", "1K").toUpperCase(),
     freepikKey: !!L.env("FREEPIK_API_KEY", ""),
     translator: L.env("ANTHROPIC_API_KEY", "") ? "anthropic" : "mymemory",
   });

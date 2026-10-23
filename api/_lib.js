@@ -1,16 +1,16 @@
 // Shared helpers for the serverless functions.
 
-const FREEPIK_BASE = "https://api.freepik.com/v1/ai";
+const FREEPIK_BASE = process.env.MAGNIFIC_API_BASE || "https://api.magnific.com/v1/ai";
 
 function env(name, fallback) {
   const v = process.env[name];
   return v && v.trim() ? v.trim() : fallback;
 }
 
-// Freepik model path. Nano Banana Pro = "gemini-3-pro-preview".
-// Alternative (cheaper, faster): "gemini-2-5-flash-image-preview" (Nano Banana).
+// Magnific (formerly Freepik) model path under /v1/ai/text-to-image/.
+// Nano Banana Pro = "nano-banana-pro".
 function modelPath() {
-  return env("FREEPIK_MODEL", "gemini-3-pro-preview");
+  return env("FREEPIK_MODEL", "nano-banana-pro");
 }
 
 function json(res, status, body) {
@@ -43,11 +43,12 @@ async function readBody(req) {
 }
 
 async function freepik(path, init = {}) {
-  const key = env("FREEPIK_API_KEY", "");
+  const key = env("FREEPIK_API_KEY", "") || env("MAGNIFIC_API_KEY", "");
   if (!key) throw new Error("FREEPIK_API_KEY no está configurada en el servidor.");
   const r = await fetch(FREEPIK_BASE + path, {
     ...init,
     headers: {
+      "x-magnific-api-key": key,
       "x-freepik-api-key": key,
       "Content-Type": "application/json",
       Accept: "application/json",
@@ -59,22 +60,15 @@ async function freepik(path, init = {}) {
   try { data = text ? JSON.parse(text) : null; } catch (e) { data = { raw: text }; }
   if (!r.ok) {
     const msg = (data && (data.message || data.error || data.title)) || text || r.statusText;
-    const err = new Error(`Freepik ${r.status}: ${String(msg).slice(0, 300)}`);
+    const err = new Error(`Magnific ${r.status}: ${String(msg).slice(0, 300)}`);
     err.status = r.status;
     throw err;
   }
   return data;
 }
 
-// Freepik aspect ratio enums.
-const ASPECT = {
-  "3:2": "standard_3_2",
-  "1:1": "square_1_1",
-  "4:5": "social_post_4_5",
-  "9:16": "social_story_9_16",
-  "16:9": "widescreen_16_9",
-  "4:3": "classic_4_3",
-};
+// Nano Banana Pro aspect ratios.
+const ASPECT = { "3:2": "3:2", "1:1": "1:1", "4:5": "4:5", "9:16": "9:16", "16:9": "16:9", "4:3": "4:3" };
 
 const WORDS = ["", "single-dish", "two-course", "three-course", "four-course", "five-course", "six-course"];
 

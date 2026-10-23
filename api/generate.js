@@ -24,7 +24,7 @@ module.exports = async (req, res) => {
     const payload = {
       prompt,
       aspect_ratio: aspect,
-      resolution: L.env("IMAGE_RESOLUTION", "1k"),
+      resolution: L.env("IMAGE_RESOLUTION", "1K").toUpperCase(),
     };
     const data = await L.freepik(`/text-to-image/${L.modelPath()}`, { method: "POST", body: JSON.stringify(payload) });
     const task = (data && data.data) || data || {};
