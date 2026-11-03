@@ -72,32 +72,52 @@ const ASPECT = { "3:2": "3:2", "1:1": "1:1", "4:5": "4:5", "9:16": "9:16", "16:9
 
 const WORDS = ["", "single-dish", "two-course", "three-course", "four-course", "five-course", "six-course"];
 
-// Background per day theme, matching the card colours (Mediterráneo palette)
-const THEME_BG = {
-  lactosa: "a soft almond-cream linen surface with a faint dusty-blue tint",
-  marisco: "a pale sea-blue washed linen surface with a few lemon wedges and flakes of sea salt",
-  gluten: "a warm sand and saffron toned clay surface",
-  vegetariano: "a soft sage-green linen surface with a few scattered fresh herb leaves",
-  freaky: "a warm peach and coral toned surface with a playful, lively feel",
-  none: "a light oak table",
+// Abstract artwork per theme. Colours match the card palette (Mediterráneo), so image and card read as one piece.
+// The menu only inspires colour and texture: nothing recognisable as a plated dish, so no expectations about the food.
+const THEME_ART = {
+  lactosa: {
+    palette: "almond cream (#efe7da), oat beige, soft dusty blue (#3d5a80) and a touch of warm white",
+    motif: "light, airy and calm: soft overlapping rounded forms like smooth drifting clouds, one or two fine dusty-blue ink lines flowing through the space",
+  },
+  marisco: {
+    palette: "pale sea blue (#dce8ee), deep petrol blue (#2f5d7c), sand and a small accent of lemon yellow",
+    motif: "the rhythm of the Mediterranean: layered horizontal wave bands, an abstract spiral echoing a shell, a scatter of tiny salt-like dots",
+  },
+  gluten: {
+    palette: "warm sand (#f3e2c0), saffron yellow, ochre and burnt sienna (#9a6224)",
+    motif: "sun and fields near Valencia: a large warm circle, rhythmic vertical brush strokes like rows in a field, clusters of small grain-like dots",
+  },
+  vegetariano: {
+    palette: "soft sage (#e2e6cf), olive green (#5f6b33), fresh leaf green and a little cream",
+    motif: "a garden in cut paper: bold organic leaf shapes in the spirit of Matisse cut-outs, layered and overlapping, a few thin stems drawn in ink",
+  },
+  freaky: {
+    palette: "peach (#f5d6c8), coral, terracotta (#bf5236) and a small accent of deep plum",
+    motif: "playful and energetic: bold confetti-like geometric and organic shapes in lively rotation, a single loose squiggle line, a sense of party and surprise",
+  },
+  cocido: {
+    palette: "dusty rose (#ecd3cf), deep wine red (#7c2f2b), smoked paprika, chickpea gold and a warm earthy brown",
+    motif: "slow-cooked winter warmth: a large deep round form like a pot seen from above, gentle concentric rings, clusters of round golden chickpea-like dots, soft rising curls like steam",
+  },
+  none: {
+    palette: "warm off-white, light oak, soft grey and a single muted terracotta accent",
+    motif: "calm balanced abstract forms with a few fine ink lines",
+  },
 };
 
 function buildPrompt(en, theme) {
   const d = en.map((s) => String(s || "").trim()).filter(Boolean);
   if (!d.length) return "";
-  const n = d.length;
-  const numbered = d.map((x, k) => `${k + 1}. ${x}`).join("; ");
-  const word = ["zero","one","two","three","four","five","six"][n] || String(n);
-  const bg = THEME_BG[theme] || THEME_BG.none;
-  return `A purely visual painting with no text of any kind: no words, no letters, no handwritten labels, no captions, no arrows, no annotations, no menu, no signage.
+  const art = THEME_ART[theme] || THEME_ART.none;
+  const inspiration = d.join(", ");
+  return `Minimalist abstract artwork, wide landscape composition. A purely visual painting with no text of any kind: no words, no letters, no numbers, no labels, no signage.
 
-Tight overhead close-up of a lunch from a small chef-owned restaurant in Valencia with Michelin-level craft but a warm, homely soul. Exactly ${word} dishes, one plate or bowl per course, each course appears only once (never two of the same dish): ${numbered}.
+Theme and mood: ${art.motif}.
+Colour palette, used with restraint and harmony: ${art.palette}. The lightest tone of the palette is the ground colour of the whole image, so the artwork blends seamlessly into a card of the same colour.
 
-The food is the hero and fills the whole image: the plates are large in frame, set close together and run edge to edge, so almost no background shows. Plates may touch or slightly cross the image border, but the food on each plate stays clearly visible. Only small glimpses of ${bg} between the plates; no other props.
+Today's menu (${inspiration}) is only a quiet source of inspiration for colour, rhythm and texture. Do not depict any food, plates, bowls, cutlery, glasses, tables, hands or people. Nothing should look like a real dish or a food photograph; the image must not suggest what the food will look like.
 
-Each plate is cooked with real skill and plated with quiet confidence: a precise, generous main element; a glossy, deeply flavoured sauce or jus pooled with care; a crisp or crunchy contrast; restrained seasonal garnish such as tender herbs, fine shavings or a light dusting of spice (no edible flowers or petals, at most one tiny blossom on the dessert); a few drops of green olive oil. Elegant yet unpretentious, inviting rather than austere, with natural textures, beautiful caramelisation and colours that come from the ingredients. Every dish looks warm, fresh and irresistibly delicious. Handmade ceramic plates and bowls in soft natural glazes, varied sizes.
-
-Painted in refined gouache and watercolour with delicate pencil and ink detailing, soft natural side light, gentle shadows, fine paper texture. Clearly a painting, not a photograph. The image contains no writing at all.`;
+Style: contemporary fine art print, minimalist and elegant, in the spirit of Matisse cut-outs, Joan Miró's simplicity and modern Mediterranean poster art. Few large, confident shapes with clear edges, layered gouache and cut-paper textures, a handful of delicate ink lines, subtle grain of matte watercolour paper. Balanced, airy composition that fills the whole frame edge to edge with the ground colour, generous negative space, no border, no frame, no vignette.`;
 }
 
 // "Vegetable Soup" -> "Vegetable soup"; words capitalized in the Spanish source (Sacher, Spätzle) keep their capital.
