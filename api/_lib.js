@@ -209,7 +209,7 @@ function buildPrompt(en, theme) {
   if (!d.length && theme !== "cerrado") return "";
   const t = THEME_TOY[theme] || THEME_TOY.none;
   const scene = pick(t.scenes), camera = pick(VARIANCE.camera), light = pick(VARIANCE.light), detail = pick(VARIANCE.detail), base = pick(VARIANCE.base);
-  return `Charming toy photography of a small diorama built from plastic building bricks, centred in a wide landscape frame: ${scene}. Extra touch: ${detail}.
+  return `Charming toy photography of a small diorama built from plastic building bricks, centred in a wide landscape frame: ${scene}. Extra touch: ${detail}.${d[0] && theme !== "cerrado" ? `\n\nToday's first course is "${d[0]}". Weave a playful nod to it into the scene: its main ingredient (for example artichokes, oranges, prawns or chickpeas) appears as a small brick-built prop that Perico or Maria holds, carries or uses, or as a small detail on the base. It is a recognisable accent, not the main subject, and it fits naturally into the scene.` : ""}
 
 The two main characters must be clearly recognisable and appear exactly once each, with these exact features (match the character reference images when given):
 - ${PERICO}.
