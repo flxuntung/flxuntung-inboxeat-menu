@@ -72,36 +72,43 @@ const ASPECT = { "3:2": "3:2", "1:1": "1:1", "4:5": "4:5", "9:16": "9:16", "16:9
 
 const WORDS = ["", "single-dish", "two-course", "three-course", "four-course", "five-course", "six-course"];
 
-// Abstract artwork per theme. Colours match the card palette (Mediterráneo), so image and card read as one piece.
-// The menu only inspires colour and texture: nothing recognisable as a plated dish, so no expectations about the food.
+// Abstract fine art per theme, like the paintings that hang in a Michelin-starred dining room.
+// Strictly non-figurative: mood, material and colour only, so nothing suggests what the food looks like.
 const THEME_ART = {
   lactosa: {
-    palette: "almond cream (#efe7da), oat beige, soft dusty blue (#3d5a80) and a touch of warm white",
-    motif: "light, airy and calm: soft overlapping rounded forms like smooth drifting clouds, one or two fine dusty-blue ink lines flowing through the space",
+    palette: "almond cream (#efe7da), warm ivory, pale stone and a single quiet stroke of dusty blue (#3d5a80)",
+    mood: "stillness and lightness, like morning light on limestone",
+    gesture: "soft veils of translucent colour layered over each other, one long, calm horizontal brush stroke in dusty blue",
   },
   marisco: {
-    palette: "pale sea blue (#dce8ee), deep petrol blue (#2f5d7c), sand and a small accent of lemon yellow",
-    motif: "the rhythm of the Mediterranean: layered horizontal wave bands, an abstract spiral echoing a shell, a scatter of tiny salt-like dots",
+    palette: "pale sea mist (#dce8ee), deep petrol blue (#2f5d7c), wet sand and a hairline of silver",
+    mood: "the calm depth of the Mediterranean at dawn",
+    gesture: "a broad horizon of layered blue washes that dissolve into each other, a few fine silver-grey lines drifting like currents",
   },
   gluten: {
-    palette: "warm sand (#f3e2c0), saffron yellow, ochre and burnt sienna (#9a6224)",
-    motif: "sun and fields near Valencia: a large warm circle, rhythmic vertical brush strokes like rows in a field, clusters of small grain-like dots",
+    palette: "warm sand (#f3e2c0), saffron, raw sienna, burnt umber (#9a6224) and a touch of gold leaf",
+    mood: "late summer heat over the fields of Valencia",
+    gesture: "a large glowing field of saffron and sand fading into each other, one textured band of sienna, a small fleck of gold leaf",
   },
   vegetariano: {
-    palette: "soft sage (#e2e6cf), olive green (#5f6b33), fresh leaf green and a little cream",
-    motif: "a garden in cut paper: bold organic leaf shapes in the spirit of Matisse cut-outs, layered and overlapping, a few thin stems drawn in ink",
+    palette: "soft sage (#e2e6cf), olive (#5f6b33), moss green, pale celadon and warm linen",
+    mood: "the quiet of a garden after rain",
+    gesture: "overlapping translucent green glazes with soft edges, one confident dark olive brush mark, fine dry-brush texture",
   },
   freaky: {
-    palette: "peach (#f5d6c8), coral, terracotta (#bf5236) and a small accent of deep plum",
-    motif: "playful and energetic: bold confetti-like geometric and organic shapes in lively rotation, a single loose squiggle line, a sense of party and surprise",
+    palette: "peach (#f5d6c8), coral, terracotta (#bf5236), deep plum and a flash of gold",
+    mood: "joyful, surprising, celebratory, with an edge",
+    gesture: "a few bold, energetic sweeping brush strokes crossing each other, splashes and drips used sparingly, one small accent of gold leaf",
   },
   cocido: {
-    palette: "dusty rose (#ecd3cf), deep wine red (#7c2f2b), smoked paprika, chickpea gold and a warm earthy brown",
-    motif: "slow-cooked winter warmth: a large deep round form like a pot seen from above, gentle concentric rings, clusters of round golden chickpea-like dots, soft rising curls like steam",
+    palette: "dusty rose (#ecd3cf), deep wine red (#7c2f2b), smoked paprika, ochre gold and warm umber",
+    mood: "slow, deep warmth on a winter day, generosity and tradition",
+    gesture: "deep layered glazes of wine red and paprika, rich and velvety, softening into dusty rose, a fine scatter of ochre gold pigment",
   },
   none: {
-    palette: "warm off-white, light oak, soft grey and a single muted terracotta accent",
-    motif: "calm balanced abstract forms with a few fine ink lines",
+    palette: "warm off-white, raw linen, soft grey and a single muted terracotta accent",
+    mood: "calm and quiet",
+    gesture: "soft layered washes and one fine ink line",
   },
 };
 
@@ -109,15 +116,17 @@ function buildPrompt(en, theme) {
   const d = en.map((s) => String(s || "").trim()).filter(Boolean);
   if (!d.length) return "";
   const art = THEME_ART[theme] || THEME_ART.none;
-  const inspiration = d.join(", ");
-  return `Minimalist abstract artwork, wide landscape composition. A purely visual painting with no text of any kind: no words, no letters, no numbers, no labels, no signage.
+  return `A refined, purely abstract contemporary painting, the kind of original artwork that hangs in the dining room of a Michelin-starred restaurant. Wide landscape format.
 
-Theme and mood: ${art.motif}.
-Colour palette, used with restraint and harmony: ${art.palette}. The lightest tone of the palette is the ground colour of the whole image, so the artwork blends seamlessly into a card of the same colour.
+Strictly non-figurative: no objects, no food, no pots, plates, bowls, cutlery, steam, fruit, vegetables, shells, leaves, sun, people or recognisable shapes of any kind. No text, letters, numbers, signatures or symbols.
 
-Today's menu (${inspiration}) is only a quiet source of inspiration for colour, rhythm and texture. Do not depict any food, plates, bowls, cutlery, glasses, tables, hands or people. Nothing should look like a real dish or a food photograph; the image must not suggest what the food will look like.
+Mood: ${art.mood}.
+Gesture and composition: ${art.gesture}.
+Colour palette: ${art.palette}. The lightest tone is the ground colour of the whole canvas.
 
-Style: contemporary fine art print, minimalist and elegant, in the spirit of Matisse cut-outs, Joan Miró's simplicity and modern Mediterranean poster art. Few large, confident shapes with clear edges, layered gouache and cut-paper textures, a handful of delicate ink lines, subtle grain of matte watercolour paper. Balanced, airy composition that fills the whole frame edge to edge with the ground colour, generous negative space, no border, no frame, no vignette.`;
+Technique: museum-quality mixed media on heavy cotton paper: layered translucent oil and acrylic glazes, mineral pigments, subtle plaster or gesso texture, visible brush marks and dry-brush edges, delicate depth. Inspired by Mark Rothko's colour fields, Helen Frankenthaler's soak-stain washes, Antoni Tàpies' material textures and Japanese wabi-sabi restraint. Sophisticated, quiet, expensive-looking, with generous negative space and a single clear focal area.
+
+The painting fills the whole frame edge to edge, no border, no frame, no wall, no gallery setting, shot flat and evenly lit like a fine art reproduction.`;
 }
 
 // "Vegetable Soup" -> "Vegetable soup"; words capitalized in the Spanish source (Sacher, Spätzle) keep their capital.
