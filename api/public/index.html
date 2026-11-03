@@ -104,7 +104,23 @@ textarea{min-height:120px;border:1.5px solid var(--rule-soft);padding:10px;resiz
 .preview{position:sticky;top:24px;display:grid;gap:16px;min-width:0}
 .preview .top{display:flex;justify-content:space-between;align-items:center;gap:12px}
 h2{font-weight:400;letter-spacing:.22em;text-transform:uppercase;font-size:11px;margin:0;color:var(--ink-soft)}
-.cardwrap{background:var(--wash);padding:20px;display:grid;place-items:center}
+.cardwrap{background:var(--wash);padding:20px;display:grid;place-items:center;position:relative}
+/* loader over the preview while an image is being created */
+.loader{position:absolute;inset:0;display:grid;place-items:center;background:rgba(255,255,255,.82);backdrop-filter:blur(3px);-webkit-backdrop-filter:blur(3px);z-index:5}
+.loader .box{display:grid;justify-items:center;gap:14px;text-align:center;padding:24px}
+.loader svg{width:76px;height:76px;overflow:visible}
+.loader .lid-l{transform-origin:22px 30px;animation:lidL 1.6s ease-in-out infinite}
+.loader .lid-r{transform-origin:54px 30px;animation:lidR 1.6s ease-in-out infinite}
+.loader .hat{animation:hop 1.6s ease-in-out infinite}
+@keyframes lidL{0%,100%{transform:rotate(0)}50%{transform:rotate(-28deg)}}
+@keyframes lidR{0%,100%{transform:rotate(0)}50%{transform:rotate(28deg)}}
+@keyframes hop{0%,100%{transform:translateY(6px);opacity:.35}50%{transform:translateY(-6px);opacity:1}}
+.loader .step{font-size:11px;letter-spacing:.22em;text-transform:uppercase;color:var(--ink)}
+.loader .time{font-family:var(--serif);font-size:30px;line-height:1;color:var(--ink);font-variant-numeric:tabular-nums}
+.loader .bar{width:180px;height:2px;background:var(--rule-soft);position:relative;overflow:hidden}
+.loader .bar i{position:absolute;left:0;top:0;bottom:0;width:0;background:var(--ink);transition:width .5s linear}
+.loader .eta{font-size:12px;color:var(--ink-soft)}
+@media (prefers-reduced-motion:reduce){.loader .lid-l,.loader .lid-r,.loader .hat{animation:none}}
 #cardCanvas{display:block;width:100%;max-width:400px;height:auto;background:#fff;box-shadow:0 1px 0 rgba(0,0,0,.06),0 0 0 1px var(--rule-soft)}
 .preview .links{display:flex;gap:20px;flex-wrap:wrap}
 .dlrow{display:grid;grid-template-columns:1fr;gap:10px}
@@ -250,7 +266,22 @@ h2{font-weight:400;letter-spacing:.22em;text-transform:uppercase;font-size:11px;
           <button type="button" class="link" id="redo" hidden>Otra ilustración</button>
         </div>
       </div>
-      <div class="cardwrap"><canvas id="cardCanvas" aria-label="Vista previa de la carta"></canvas></div>
+      <div class="cardwrap"><canvas id="cardCanvas" aria-label="Vista previa de la carta"></canvas>
+        <div class="loader" id="loader" hidden role="status" aria-live="polite">
+          <div class="box">
+            <svg viewBox="0 0 76 76" fill="none" stroke="#111" stroke-width="2" stroke-linejoin="round" stroke-linecap="round" aria-hidden="true">
+              <g class="hat"><path d="M30 14c-5 0-7-6-2-8 1-4 7-5 10-2 3-3 9-2 10 2 5 2 3 8-2 8z"/><path d="M31 14h14v5H31z"/></g>
+              <path class="lid-l" d="M38 30L22 30L12 40L28 40Z"/>
+              <path class="lid-r" d="M38 30L54 30L64 40L48 40Z"/>
+              <path d="M22 30L38 38L54 30M22 30v24l16 8 16-8V30M38 38v24"/>
+            </svg>
+            <div class="step" id="ldStep">Preparando</div>
+            <div class="time" id="ldTime">0 s</div>
+            <div class="bar"><i id="ldBar"></i></div>
+            <div class="eta" id="ldEta">Suele tardar unos 45 segundos</div>
+          </div>
+        </div>
+      </div>
       <p class="hint" id="staleNote" hidden></p>
       <div class="dlrow">
         <button type="button" class="btn" id="dl">Descargar carta</button>
@@ -578,13 +609,22 @@ $("form").addEventListener("submit",async e=>{
   const dishes=state.dishes.filter(d=>d.es.trim()||d.en.trim());
   if(!dishes.length&&themeKey()!=="cerrado"){setMsg("msg","Añade al menos un plato.","err");return}
   running=true;$("go").disabled=true;syncBar();const prog=$("prog");prog.hidden=false;prog.classList.toggle("mobile",isPhone());const bar=prog.firstElementChild;bar.style.width="4%";
-  const t0=Date.now();const tick=setInterval(()=>{bar.style.width=Math.min(92,4+(Date.now()-t0)/900)+"%"},600);
+  const t0=Date.now();const EXPECT=45;
+  const ld=$("loader");ld.hidden=false;$("ldBar").style.width="2%";$("ldTime").textContent="0 s";$("ldStep").textContent="Preparando";
+  if(isPhone())$("cartaSec").scrollIntoView({behavior:"smooth",block:"start"});
+  const tick=setInterval(()=>{
+    const sec=Math.round((Date.now()-t0)/1000);
+    const pct=Math.min(95,sec<=EXPECT?sec/EXPECT*85:85+Math.min(10,(sec-EXPECT)/6));
+    bar.style.width=pct+"%";$("ldBar").style.width=pct+"%";$("ldTime").textContent=sec+" s";
+    $("ldEta").textContent=sec<EXPECT?"Faltan unos "+Math.max(5,EXPECT-sec)+" segundos":"Casi lista, un momento…";
+    const mm=$("mMsg");if(mm&&isPhone())mm.textContent=$("ldStep").textContent+" · "+sec+" s";
+  },500);
   try{
-    setMsg("msg","Traduciendo y enviando…");
+    setMsg("msg","Traduciendo y enviando…");$("ldStep").textContent="Traduciendo";
     const start=await api("/api/generate",{method:"POST",body:JSON.stringify({dishes:dishes.map(d=>({es:d.es,en:d.en})),aspect:fmt().img,theme:themeKey()})});
     start.dishes.forEach((d,i)=>{const s=state.dishes.find(x=>x.es.trim()===d.es&&!x.en)||state.dishes[i];if(s&&!s.en&&s.es.trim()===d.es){s.en=d.en;s.auto=true}});
     renderDishes();renderCard();save();
-    setMsg("msg","Creando la ilustración…");
+    setMsg("msg","Creando la ilustración…");$("ldStep").textContent="Creando la imagen";
     let images=start.images||[],status=start.status;
     const deadline=Date.now()+4*60*1000;
     while(!images.length&&Date.now()<deadline){
@@ -594,7 +634,7 @@ $("form").addEventListener("submit",async e=>{
       if(/FAIL|ERROR|CANCEL/.test(status))throw new Error("La generación falló en Freepik ("+status+").");
     }
     if(!images.length)throw new Error("Tiempo de espera agotado. Inténtalo de nuevo.");
-    setMsg("msg","Descargando la imagen…");
+    setMsg("msg","Descargando la imagen…");$("ldStep").textContent="Casi lista";$("ldBar").style.width="98%";
     let dataUrl=images[0];
     try{
       const r=await api("/api/image?url="+encodeURIComponent(images[0]));
@@ -607,7 +647,7 @@ $("form").addEventListener("submit",async e=>{
   }catch(err){
     setMsg("msg",err.status===401?"Sesión caducada. Vuelve a entrar.":(err.message||"No se pudo crear la ilustración."),"err");
     if(err.status===401){try{localStorage.removeItem(PWKEY)}catch(x){}pw="";enter()}
-  }finally{clearInterval(tick);running=false;$("go").disabled=false;syncBar();setTimeout(()=>{prog.hidden=true;prog.classList.remove("mobile");bar.style.width="0"},800)}
+  }finally{clearInterval(tick);$("ldBar").style.width="100%";setTimeout(()=>{$("loader").hidden=true},400);running=false;$("go").disabled=false;syncBar();setTimeout(()=>{prog.hidden=true;prog.classList.remove("mobile");bar.style.width="0"},800)}
 });
 
 async function toJpegDataUrl(blob){
