@@ -11,7 +11,7 @@ module.exports = async (req, res) => {
       .map((d) => ({ es: String(d.es || "").trim().slice(0, 120), en: String(d.en || "").trim().slice(0, 120) }))
       .filter((d) => d.es || d.en)
       .slice(0, 6);
-    if (!dishes.length) return L.json(res, 400, { error: "Añade al menos un plato." });
+    if (!dishes.length && body.theme !== "cerrado") return L.json(res, 400, { error: "Añade al menos un plato." });
 
     const missing = dishes.filter((d) => !d.en && d.es);
     if (missing.length) {

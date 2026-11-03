@@ -147,6 +147,18 @@ const THEME_TOY = {
       "Maria carrying a basket of chickpeas, cabbage, carrots and chorizo towards Perico, who stands at a little stall with a big pot",
     ],
   },
+  cerrado: {
+    bg: "dark charcoal grey (#3a3b3d)",
+    scifi: true,
+    scenes: [
+      "Perico and Maria as retro sci-fi space explorers closing the round hatch of their small spaceship, a little robot sidekick holding a tiny closed sign without letters",
+      "Perico and Maria in space pilot suits relaxing on a small moon with a tiny campfire, their spaceship parked behind them, stars in the dark",
+      "Perico and Maria floating in a small space station window, waving goodbye, a little round robot switching off the lights",
+      "Perico and Maria in space suits sitting on a crate next to their parked spaceship, drinking from tiny cups, the ship's engines off",
+      "Perico and Maria as space explorers on a dusty grey planet, planting a small flag without symbols next to their landed ship, a robot napping nearby",
+      "Perico and Maria in space pilot suits asleep in two reclining pilot chairs inside a tiny cockpit, stars outside the window",
+    ],
+  },
   none: {
     bg: "warm off-white",
     scenes: [
@@ -194,7 +206,7 @@ const pick = (arr) => arr[Math.floor(Math.random() * arr.length)];
 
 function buildPrompt(en, theme) {
   const d = en.map((s) => String(s || "").trim()).filter(Boolean);
-  if (!d.length) return "";
+  if (!d.length && theme !== "cerrado") return "";
   const t = THEME_TOY[theme] || THEME_TOY.none;
   const scene = pick(t.scenes), camera = pick(VARIANCE.camera), light = pick(VARIANCE.light), detail = pick(VARIANCE.detail), base = pick(VARIANCE.base);
   return `Charming toy photography of a small diorama built from plastic building bricks, centred in a wide landscape frame: ${scene}. Extra touch: ${detail}.
@@ -202,11 +214,11 @@ function buildPrompt(en, theme) {
 The two main characters must be clearly recognisable and appear exactly once each, with these exact features (match the character reference images when given):
 - ${PERICO}.
 - ${t.party ? MARIA_CASUAL : MARIA}.
-Keep them as genuine toy-brick minifigures (blocky torso, cylindrical head, C-shaped hands, printed face details), not realistic people. Any other figures or animals are small side characters.
+${t.scifi ? "In this scene both wear original retro sci-fi space-explorer outfits (simple space suits in grey, white and dark blue, small helmets or headsets), while keeping their faces, Perico's glasses and curly hair and Maria's hairstyle recognisable. Generic original sci-fi design only: no lightsabers, no robes, no helmets, ships, droids or costumes from any existing film franchise.\n" : ""}Keep them as genuine toy-brick minifigures (blocky torso, cylindrical head, C-shaped hands, printed face details), not realistic people. Any other figures or animals are small side characters.
 
 Composition: the diorama sits in the centre ${base}, ${camera}, with calm empty space around it. Seamless, plain studio background in ${t.bg}, the same colour from edge to edge, no horizon line, no props outside the diorama.
 
-Look: high-end macro product photography, glossy plastic with realistic reflections, ${light}, soft shadow under the base, shallow depth of field, crisp focus on the main figure, clean and minimal, playful but stylish. Make this scene feel fresh and different, with its own composition and storytelling.
+Look: high-end macro product photography${t.scifi ? ", moody low-key lighting in dark greys with a few small cool blue light accents" : ""}, glossy plastic with realistic reflections, ${light}, soft shadow under the base, shallow depth of field, crisp focus on the main figure, clean and minimal, playful but stylish. Make this scene feel fresh and different, with its own composition and storytelling.
 
 No text, letters, numbers, logos or brand names anywhere, no printed labels on the bricks, no packaging.`;
 }

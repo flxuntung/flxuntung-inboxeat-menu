@@ -195,6 +195,7 @@ h2{font-weight:400;letter-spacing:.22em;text-transform:uppercase;font-size:11px;
               <option value="vegetariano">Vegetariano · jueves</option>
               <option value="freaky">Freaky Friday · viernes</option>
               <option value="cocido">Cocido</option>
+              <option value="cerrado">Cerrado</option>
               <option value="none">Sin tema</option>
             </select>
             <p class="hint" id="themeHint"></p>
@@ -395,6 +396,7 @@ const THEMES={
   vegetariano:{bg:"#e2e6cf",accent:"#5f6b33",name:"Vegetariano"},
   freaky:{bg:"#f5d6c8",accent:"#bf5236",name:"Freaky Friday"},
   cocido:{bg:"#ecd3cf",accent:"#7c2f2b",name:"Cocido"},
+  cerrado:{bg:"#3a3b3d",accent:"#d9d6cf",name:"Cerrado",dark:true},
   none:{bg:"#ffffff",accent:"#8a8a8a",name:""}
 };
 /* line icons per theme on a 48x48 grid, drawn as strokes in the theme accent (same thin line language as the logo) */
@@ -468,7 +470,9 @@ function drawCard(ctx,W,H,img,textOnly){
   // text block: editorial hierarchy (serif for dishes and prices, spaced sans for labels), scaled to fit below the image
   const S="Jost, 'Helvetica Neue', Arial, sans-serif";
   const pad=64*s, bottomPad=pad*1.1, maxW=W-2*pad*1.45;
-  const dishes=state.dishes.filter(x=>x.es||x.en).map(d=>{
+  const TH=dayTheme(), INK=TH.dark?"#f2f1ec":"#111", SOFT=TH.dark?"#c8c7c1":"#4a4a4a", MUTE=TH.dark?"#a8a7a1":"#6f6f6f", MUTE2=TH.dark?"#b5b4ae":"#5a5a5a";
+  const closed=themeKey()==="cerrado"&&!state.dishes.some(x=>(x.es||x.en||"").trim());
+  const dishes=closed?[{es:"Hoy cerramos",en:"Closed today · ¡Volvemos pronto!"}]:state.dishes.filter(x=>x.es||x.en).map(d=>{
     const es=(d.es||"").trim(),en=(d.en||"").trim();
     const same=es&&en&&es.toLowerCase().replace(/[^\p{L}\p{N}]/gu,"")===en.toLowerCase().replace(/[^\p{L}\p{N}]/gu,"");
     return {es:es||en,en:same?"":en};
@@ -484,24 +488,24 @@ function drawCard(ctx,W,H,img,textOnly){
     if(!skipTop){
       const th=dayTheme();
       if(th.name){text(th.name.toUpperCase(),40,500,S,11,44,th.accent,kf);y+=14*kf}
-      if(numTxt){text("MENÚ  Nº "+numTxt,19,400,S,5.5,26,"#6f6f6f",kf)}
+      if(numTxt){text("MENÚ  Nº "+numTxt,19,400,S,5.5,26,MUTE,kf)}
       y+=24*kf+ex*0.5;
-      text(fmtDate(state.date),70,400,F,0,70,"#111",kf);
+      text(fmtDate(state.date),70,400,F,0,70,INK,kf);
       y+=34*kf+ex;
       dishes.forEach((d,i)=>{
         if(i>0){y+=20*kd+ex;text("+",30,400,F,0,30,dayTheme().accent,kd);y+=6*kd+ex}
-        text(d.es,50,400,F,0,58,"#111",kd);
-        if(d.en)text(d.en,29,400,S,0.3,46,"#4a4a4a",kd);
+        text(d.es,50,400,F,0,58,INK,kd);
+        if(d.en)text(d.en,29,400,S,0.3,46,SOFT,kd);
       });
     }
     if(part==="top")return y-y0;
     y+=(part==="bottom"?0:56)*kf;
     const cw=(W-2*pad)/3;
-    PRICES.forEach((p,i)=>{const x=pad+cw*i+cw/2;
-      if(go){ctx.fillStyle="#111";set(`400 ${42*kf}px ${F}`,0);try{ctx.fontVariantNumeric="tabular-nums"}catch(e){}ctx.fillText(p.amount,x,y+44*kf);
-        ctx.fillStyle="#5a5a5a";set(`400 ${20*kf}px ${S}`,4.5*kf);ctx.fillText(p.label.toUpperCase(),x,y+80*kf)}});
+    if(!closed)PRICES.forEach((p,i)=>{const x=pad+cw*i+cw/2;
+      if(go){ctx.fillStyle=INK;set(`400 ${42*kf}px ${F}`,0);try{ctx.fontVariantNumeric="tabular-nums"}catch(e){}ctx.fillText(p.amount,x,y+44*kf);
+        ctx.fillStyle=MUTE2;set(`400 ${20*kf}px ${S}`,4.5*kf);ctx.fillText(p.label.toUpperCase(),x,y+80*kf)}});
     y+=80*kf;y+=26*kf;
-    text(FOOT.replace(/\s+(\d)/," · $1").toUpperCase(),21,400,S,5.5,44,"#6f6f6f",kf);
+    text(FOOT.replace(/\s+(\d)/," · $1").toUpperCase(),21,400,S,5.5,44,MUTE,kf);
     set(ctx.font,0);
     return y-y0;
   }
@@ -572,7 +576,7 @@ $("form").addEventListener("submit",async e=>{
   e.preventDefault();if(running)return;
   if(state.aspect==="4:5"){setMsg("msg","Instagram post no lleva ilustración. Elige Story.","err");return}
   const dishes=state.dishes.filter(d=>d.es.trim()||d.en.trim());
-  if(!dishes.length){setMsg("msg","Añade al menos un plato.","err");return}
+  if(!dishes.length&&themeKey()!=="cerrado"){setMsg("msg","Añade al menos un plato.","err");return}
   running=true;$("go").disabled=true;syncBar();const prog=$("prog");prog.hidden=false;prog.classList.toggle("mobile",isPhone());const bar=prog.firstElementChild;bar.style.width="4%";
   const t0=Date.now();const tick=setInterval(()=>{bar.style.width=Math.min(92,4+(Date.now()-t0)/900)+"%"},600);
   try{
