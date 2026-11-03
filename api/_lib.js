@@ -72,47 +72,130 @@ const ASPECT = { "3:2": "3:2", "1:1": "1:1", "4:5": "4:5", "9:16": "9:16", "16:9
 
 const WORDS = ["", "single-dish", "two-course", "three-course", "four-course", "five-course", "six-course"];
 
-// One centred toy-brick scene per theme. Generic building-brick toy style, no brand names or logos.
+// Toy-brick dioramas per theme. Each call picks a random scene, camera, light and extra detail,
+// so repeated generations for the same theme stay on topic but look different.
 const THEME_TOY = {
   lactosa: {
     bg: "soft almond cream (#efe7da)",
-    scene: "a cheerful brick-built dairy cow wearing tiny sunglasses and lounging in a deck chair, taking the day off, next to a small chef figure holding a glass of oat milk",
+    scenes: [
+      "a cheerful brick-built dairy cow wearing tiny sunglasses lounging in a deck chair, taking the day off, next to a chef figure holding a glass of oat milk",
+      "a barista figure behind a tiny café counter frothing oat milk, a brick-built cow peeking in through the window with a curious smile",
+      "a cow figure relaxing in a small inflatable pool with a cocktail umbrella, while a chef figure carries a carton of almond milk past",
+      "a farmer figure and a cow on a tiny meadow waving goodbye to an old milk churn being carried away on a little cart",
+      "a chef figure pouring a creamy plant-based sauce from a jug into a pan, a cow figure giving a thumbs up from behind a fence",
+      "a cow figure reading a newspaper on a park bench under a small tree, a chef figure nearby whisking oat cream in a bowl",
+    ],
   },
   marisco: {
     bg: "pale sea blue (#dce8ee)",
-    scene: "a fisherman figure with a yellow raincoat and a little beard standing in a small brick-built wooden boat, proudly holding up a big prawn, with a tiny crab and a few fish on deck",
+    scenes: [
+      "a fisherman figure in a yellow raincoat standing in a small wooden boat, proudly holding up a big prawn, a crab and a fish on deck",
+      "a diver figure in a vintage brass helmet on the sea floor, collecting mussels and clams into a basket, small fish swimming around",
+      "a fisherman figure on a tiny wooden pier hauling up a net full of prawns, mussels and a surprised octopus",
+      "a chef figure on a small beach grilling prawns on a little barbecue next to a striped parasol and a lifebuoy",
+      "a lighthouse keeper figure at the foot of a small red and white lighthouse holding a lobster, waves made of transparent blue bricks",
+      "two fisherman figures in a little rowing boat pulling a giant crab out of the water, splashes of transparent blue bricks",
+    ],
   },
   gluten: {
     bg: "warm sand (#f3e2c0)",
-    scene: "a farmer figure in a straw hat standing in a small brick-built Valencian rice field, holding a sack of rice, with a tiny barraca cottage behind",
+    scenes: [
+      "a farmer figure in a straw hat standing in a small Valencian rice field holding a sack of rice, a tiny barraca cottage behind",
+      "a farmer figure driving a tiny tractor through golden rice paddies, a heron figure standing in the water",
+      "a chef figure stirring a giant paella pan over a small wood fire, rice, saffron and rabbit pieces in the pan",
+      "a farmer figure in a small flat-bottomed boat gliding through a flooded rice field at sunset, reeds around",
+      "a miller figure next to a small windmill pouring rice and corn into sacks, a little donkey waiting with a cart",
+      "a farmer figure harvesting golden rice with a sickle, a stack of rice bundles beside him and a small scarecrow",
+    ],
   },
   vegetariano: {
     bg: "soft sage green (#e2e6cf)",
-    scene: "a gardener figure with a watering can tending a small brick-built vegetable garden with tomatoes, artichokes, peppers and lettuces",
+    scenes: [
+      "a gardener figure with a watering can tending a small vegetable garden with tomatoes, artichokes, peppers and lettuces",
+      "a market vendor figure behind a tiny striped market stall piled with colourful vegetables, a customer figure choosing an aubergine",
+      "a gardener figure pushing a wheelbarrow full of giant pumpkins and carrots past a small greenhouse",
+      "a chef figure harvesting herbs from a raised wooden bed, basil, rosemary and mint growing around",
+      "a farmer figure on a ladder picking oranges from a small orange tree, baskets of fruit and leeks on the ground",
+      "a gardener figure sitting on a giant brick-built tomato, having a picnic with a tiny basket of vegetables",
+    ],
   },
   freaky: {
     bg: "warm peach (#f5d6c8)",
-    scene: "a party figure with a disco wig dancing on a tiny stage under a mirror ball, carrying a tray of small finger food bites, colourful confetti in the air",
+    scenes: [
+      "a party figure in a disco wig dancing on a tiny stage under a mirror ball, carrying a tray of finger food, confetti in the air",
+      "a DJ figure with headphones behind tiny turntables, a waiter figure on roller skates serving mini skewers",
+      "a chef figure in sunglasses juggling small tapas and mini burgers, colourful balloons floating around",
+      "a party bus with figures waving out of the windows, one holding a tray of tiny canapés, streamers flying",
+      "a magician figure pulling a tray of finger food out of a top hat, a surprised waiter figure next to him",
+      "figures in party hats around a tiny round table loaded with mini tacos and croquettes, a cake with sparklers in the middle",
+    ],
   },
   cocido: {
     bg: "dusty rose (#ecd3cf)",
-    scene: "a chef figure in a white hat stirring a big brick-built clay pot of hearty stew with a long wooden spoon, a few chickpeas, a carrot and a sausage beside the pot",
+    scenes: [
+      "a chef figure in a white hat stirring a big clay pot of hearty stew with a long wooden spoon, chickpeas, a carrot and a sausage beside the pot",
+      "a grandmother figure in an apron tasting the stew from a wooden spoon next to a cast-iron stove, steam rising",
+      "two chef figures carrying a huge steaming pot between them on wooden poles, chickpeas rolling on the ground",
+      "a family of figures sitting around a small wooden table sharing bowls of stew, a big pot in the middle",
+      "a chef figure in a cosy winter kitchen with a fireplace, a pot simmering, strings of chorizo hanging from the ceiling",
+      "a market figure carrying a basket of chickpeas, cabbage, carrots and chorizo towards a little stall with a big pot",
+    ],
   },
   none: {
     bg: "warm off-white",
-    scene: "a smiling chef figure in a white hat presenting a small covered serving dish",
+    scenes: [
+      "a smiling chef figure in a white hat presenting a small covered serving dish",
+      "a waiter figure with a towel over the arm carrying a tray with a small bell-shaped dish cover",
+      "a chef figure tasting from a spoon next to a little stove with two pots",
+    ],
   },
 };
+
+const VARIANCE = {
+  camera: [
+    "seen from a low three-quarter angle",
+    "seen slightly from above at a 45 degree angle",
+    "seen straight from the front at eye level with the figures",
+    "seen from a gentle high angle, almost top-down",
+    "seen from a three-quarter angle from the left",
+    "seen from a three-quarter angle from the right",
+  ],
+  light: [
+    "soft warm morning light from the left",
+    "bright clean midday studio light",
+    "warm golden late-afternoon light from the right with long soft shadows",
+    "soft overcast diffused light",
+    "gentle rim light from behind with a soft fill from the front",
+  ],
+  detail: [
+    "a tiny seagull or bird figure somewhere in the scene",
+    "a small cat figure watching from the side",
+    "a little potted plant on the base",
+    "a tiny sign-free crate or barrel as an extra prop",
+    "a small dog figure wagging its tail",
+    "no extra detail, keep it very clean",
+    "a few loose bricks lying casually on the base",
+  ],
+  base: [
+    "on a small round base",
+    "on a small square base",
+    "on a slim oval base",
+    "on an irregular natural-shaped base",
+  ],
+};
+
+const pick = (arr) => arr[Math.floor(Math.random() * arr.length)];
 
 function buildPrompt(en, theme) {
   const d = en.map((s) => String(s || "").trim()).filter(Boolean);
   if (!d.length) return "";
   const t = THEME_TOY[theme] || THEME_TOY.none;
-  return `Charming toy photography of a small diorama built from plastic building bricks, centred in a wide landscape frame: ${t.scene}. The figures are classic toy-brick minifigures with simple painted faces and friendly expressions.
+  const scene = pick(t.scenes), camera = pick(VARIANCE.camera), light = pick(VARIANCE.light), detail = pick(VARIANCE.detail), base = pick(VARIANCE.base);
+  return `Charming toy photography of a small diorama built from plastic building bricks, centred in a wide landscape frame: ${scene}. Extra touch: ${detail}. The figures are classic toy-brick minifigures with simple painted faces and lively, characterful expressions and poses.
 
-Composition: the diorama sits exactly in the centre on a small round base, with plenty of calm empty space around it. Seamless, plain studio background in ${t.bg}, the same colour from edge to edge, no horizon line, no props outside the diorama.
+Composition: the diorama sits in the centre ${base}, ${camera}, with calm empty space around it. Seamless, plain studio background in ${t.bg}, the same colour from edge to edge, no horizon line, no props outside the diorama.
 
-Look: high-end macro product photography, glossy plastic with realistic reflections, soft diffused studio light from the upper left, gentle soft shadow under the base, shallow depth of field, crisp focus on the main figure, clean and minimal, playful but stylish.
+Look: high-end macro product photography, glossy plastic with realistic reflections, ${light}, soft shadow under the base, shallow depth of field, crisp focus on the main figure, clean and minimal, playful but stylish. Make this scene feel fresh and different, with its own composition and storytelling.
 
 No text, letters, numbers, logos or brand names anywhere, no printed labels on the bricks, no packaging.`;
 }
