@@ -278,7 +278,6 @@ h2{font-weight:400;letter-spacing:.22em;text-transform:uppercase;font-size:11px;
             <div class="step" id="ldStep">Preparando</div>
             <div class="time" id="ldTime">0 s</div>
             <div class="bar"><i id="ldBar"></i></div>
-            <div class="eta" id="ldEta">Suele tardar unos 45 segundos</div>
           </div>
         </div>
       </div>
@@ -616,7 +615,6 @@ $("form").addEventListener("submit",async e=>{
     const sec=Math.round((Date.now()-t0)/1000);
     const pct=Math.min(95,sec<=EXPECT?sec/EXPECT*85:85+Math.min(10,(sec-EXPECT)/6));
     bar.style.width=pct+"%";$("ldBar").style.width=pct+"%";$("ldTime").textContent=sec+" s";
-    $("ldEta").textContent=sec<EXPECT?"Faltan unos "+Math.max(5,EXPECT-sec)+" segundos":"Casi lista, un momento…";
     const mm=$("mMsg");if(mm&&isPhone())mm.textContent=$("ldStep").textContent+" · "+sec+" s";
   },500);
   try{
