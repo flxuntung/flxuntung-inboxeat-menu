@@ -74,8 +74,8 @@ const WORDS = ["", "single-dish", "two-course", "three-course", "four-course", "
 
 // The two owners of Inboxeat as toy-brick minifigures. They appear in every scene.
 const PERICO = "PERICO, the male owner and chef: a classic yellow toy-brick minifigure with short, messy curly dark-brown hair sticking out at the sides, a black-and-cream trucker cap with a small square orange-and-white patch on the front (abstract emblem, no lettering), black rectangular glasses, a big warm open-mouthed smile with friendly smile lines, a black double-breasted chef jacket with white piping and two rows of white buttons, a black apron tied at the waist, black legs";
-const MARIA = "MARIA, the female owner and chef: a classic yellow toy-brick minifigure with black hair pulled back into a low braided bun with a red ribbon bow on the side, warm brown eyes, a natural friendly smile with no lipstick and no make-up, a small beauty mark on her cheek, pearl stud earrings and a pearl necklace, a black double-breasted chef jacket with white piping and white buttons, black trousers and bright yellow sneakers";
-const MARIA_CASUAL = "MARIA, the female owner, in her party outfit: a classic yellow toy-brick minifigure with long wavy dark-brown hair, yellow sunglasses, a relaxed natural smile with no lipstick, a black-and-white striped tank top, black shorts with white stripes and bright yellow sneakers";
+const MARIA = "MARIA, the female owner and chef: a classic yellow toy-brick minifigure with glossy black hair swept back into a low braided bun, a bright red ribbon bow on the right side of the bun, warm brown eyes with fine lashes, softly arched dark eyebrows, a warm natural smile with soft brown lips (no bright lipstick), light smile lines, a small beauty mark on her lower left cheek near the chin, small pearl stud earrings and a pearl necklace, a black double-breasted chef jacket with white piping and two rows of white buttons, black trousers and bright yellow sneakers with white soles and white laces";
+const MARIA_CASUAL = MARIA + ", today with yellow sunglasses pushed up on her head for the party";
 
 // Toy-brick dioramas per theme, always starring Perico and Maria.
 // Each call picks a random scene, camera, light and extra detail, so repeated generations stay on topic but look different.
@@ -281,4 +281,4 @@ async function translate(esList) {
 }
 
 module.exports = {
-  characterRefs: (theme) => (THEME_TOY[theme] && THEME_TOY[theme].party) ? ["ref-perico.jpg", "ref-maria-casual.jpg"] : ["ref-perico.jpg", "ref-maria.jpg"], env, modelPath, json, checkPassword, readBody, freepik, ASPECT, buildPrompt, translate };
+  characterRefs: () => ["ref-perico.jpg", "ref-maria.jpg"], env, modelPath, json, checkPassword, readBody, freepik, ASPECT, buildPrompt, translate };

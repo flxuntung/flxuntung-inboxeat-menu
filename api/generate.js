@@ -33,7 +33,7 @@ module.exports = async (req, res) => {
       ? L.characterRefs(theme).map((f) => ({
           image: `https://${host}/${f}`, mime_type: "image/jpeg",
           text: f.includes("perico") ? "Character reference for PERICO: keep his face, glasses, curly hair, cap and black chef outfit."
-               : "Character reference for MARIA: keep her hairstyle, red ribbon, pearls and outfit, but give her a natural face with no make-up and no lipstick." }))
+               : "Character reference for MARIA: keep her face, braided bun with red ribbon, beauty mark, pearls, black chef outfit and yellow sneakers exactly as shown." }))
       : null;
     let data;
     try {
