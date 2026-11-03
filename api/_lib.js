@@ -72,61 +72,49 @@ const ASPECT = { "3:2": "3:2", "1:1": "1:1", "4:5": "4:5", "9:16": "9:16", "16:9
 
 const WORDS = ["", "single-dish", "two-course", "three-course", "four-course", "five-course", "six-course"];
 
-// Abstract fine art per theme, like the paintings that hang in a Michelin-starred dining room.
-// Strictly non-figurative: mood, material and colour only, so nothing suggests what the food looks like.
-const THEME_ART = {
+// One centred toy-brick scene per theme. Generic building-brick toy style, no brand names or logos.
+const THEME_TOY = {
   lactosa: {
-    palette: "almond cream (#efe7da), warm ivory, pale stone and a single quiet stroke of dusty blue (#3d5a80)",
-    mood: "stillness and lightness, like morning light on limestone",
-    gesture: "soft veils of translucent colour layered over each other, one long, calm horizontal brush stroke in dusty blue",
+    bg: "soft almond cream (#efe7da)",
+    scene: "a cheerful brick-built dairy cow wearing tiny sunglasses and lounging in a deck chair, taking the day off, next to a small chef figure holding a glass of oat milk",
   },
   marisco: {
-    palette: "pale sea mist (#dce8ee), deep petrol blue (#2f5d7c), wet sand and a hairline of silver",
-    mood: "the calm depth of the Mediterranean at dawn",
-    gesture: "a broad horizon of layered blue washes that dissolve into each other, a few fine silver-grey lines drifting like currents",
+    bg: "pale sea blue (#dce8ee)",
+    scene: "a fisherman figure with a yellow raincoat and a little beard standing in a small brick-built wooden boat, proudly holding up a big prawn, with a tiny crab and a few fish on deck",
   },
   gluten: {
-    palette: "warm sand (#f3e2c0), saffron, raw sienna, burnt umber (#9a6224) and a touch of gold leaf",
-    mood: "late summer heat over the fields of Valencia",
-    gesture: "a large glowing field of saffron and sand fading into each other, one textured band of sienna, a small fleck of gold leaf",
+    bg: "warm sand (#f3e2c0)",
+    scene: "a farmer figure in a straw hat standing in a small brick-built Valencian rice field, holding a sack of rice, with a tiny barraca cottage behind",
   },
   vegetariano: {
-    palette: "soft sage (#e2e6cf), olive (#5f6b33), moss green, pale celadon and warm linen",
-    mood: "the quiet of a garden after rain",
-    gesture: "overlapping translucent green glazes with soft edges, one confident dark olive brush mark, fine dry-brush texture",
+    bg: "soft sage green (#e2e6cf)",
+    scene: "a gardener figure with a watering can tending a small brick-built vegetable garden with tomatoes, artichokes, peppers and lettuces",
   },
   freaky: {
-    palette: "peach (#f5d6c8), coral, terracotta (#bf5236), deep plum and a flash of gold",
-    mood: "joyful, surprising, celebratory, with an edge",
-    gesture: "a few bold, energetic sweeping brush strokes crossing each other, splashes and drips used sparingly, one small accent of gold leaf",
+    bg: "warm peach (#f5d6c8)",
+    scene: "a party figure with a disco wig dancing on a tiny stage under a mirror ball, carrying a tray of small finger food bites, colourful confetti in the air",
   },
   cocido: {
-    palette: "dusty rose (#ecd3cf), deep wine red (#7c2f2b), smoked paprika, ochre gold and warm umber",
-    mood: "slow, deep warmth on a winter day, generosity and tradition",
-    gesture: "deep layered glazes of wine red and paprika, rich and velvety, softening into dusty rose, a fine scatter of ochre gold pigment",
+    bg: "dusty rose (#ecd3cf)",
+    scene: "a chef figure in a white hat stirring a big brick-built clay pot of hearty stew with a long wooden spoon, a few chickpeas, a carrot and a sausage beside the pot",
   },
   none: {
-    palette: "warm off-white, raw linen, soft grey and a single muted terracotta accent",
-    mood: "calm and quiet",
-    gesture: "soft layered washes and one fine ink line",
+    bg: "warm off-white",
+    scene: "a smiling chef figure in a white hat presenting a small covered serving dish",
   },
 };
 
 function buildPrompt(en, theme) {
   const d = en.map((s) => String(s || "").trim()).filter(Boolean);
   if (!d.length) return "";
-  const art = THEME_ART[theme] || THEME_ART.none;
-  return `A refined, purely abstract contemporary painting, the kind of original artwork that hangs in the dining room of a Michelin-starred restaurant. Wide landscape format.
+  const t = THEME_TOY[theme] || THEME_TOY.none;
+  return `Charming toy photography of a small diorama built from plastic building bricks, centred in a wide landscape frame: ${t.scene}. The figures are classic toy-brick minifigures with simple painted faces and friendly expressions.
 
-Strictly non-figurative: no objects, no food, no pots, plates, bowls, cutlery, steam, fruit, vegetables, shells, leaves, sun, people or recognisable shapes of any kind. No text, letters, numbers, signatures or symbols.
+Composition: the diorama sits exactly in the centre on a small round base, with plenty of calm empty space around it. Seamless, plain studio background in ${t.bg}, the same colour from edge to edge, no horizon line, no props outside the diorama.
 
-Mood: ${art.mood}.
-Gesture and composition: ${art.gesture}.
-Colour palette: ${art.palette}. The lightest tone is the ground colour of the whole canvas.
+Look: high-end macro product photography, glossy plastic with realistic reflections, soft diffused studio light from the upper left, gentle soft shadow under the base, shallow depth of field, crisp focus on the main figure, clean and minimal, playful but stylish.
 
-Technique: museum-quality mixed media on heavy cotton paper: layered translucent oil and acrylic glazes, mineral pigments, subtle plaster or gesso texture, visible brush marks and dry-brush edges, delicate depth. Inspired by Mark Rothko's colour fields, Helen Frankenthaler's soak-stain washes, Antoni Tàpies' material textures and Japanese wabi-sabi restraint. Sophisticated, quiet, expensive-looking, with generous negative space and a single clear focal area.
-
-The painting fills the whole frame edge to edge, no border, no frame, no wall, no gallery setting, shot flat and evenly lit like a fine art reproduction.`;
+No text, letters, numbers, logos or brand names anywhere, no printed labels on the bricks, no packaging.`;
 }
 
 // "Vegetable Soup" -> "Vegetable soup"; words capitalized in the Spanish source (Sacher, Spätzle) keep their capital.
