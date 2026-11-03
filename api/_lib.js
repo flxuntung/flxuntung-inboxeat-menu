@@ -72,81 +72,87 @@ const ASPECT = { "3:2": "3:2", "1:1": "1:1", "4:5": "4:5", "9:16": "9:16", "16:9
 
 const WORDS = ["", "single-dish", "two-course", "three-course", "four-course", "five-course", "six-course"];
 
-// Toy-brick dioramas per theme. Each call picks a random scene, camera, light and extra detail,
-// so repeated generations for the same theme stay on topic but look different.
+// The two owners of Inboxeat as toy-brick minifigures. They appear in every scene.
+const PERICO = "PERICO, the male owner and chef: a classic yellow toy-brick minifigure with short, messy curly dark-brown hair sticking out at the sides, a black-and-cream trucker cap with a small square orange-and-white patch on the front (abstract emblem, no lettering), black rectangular glasses, a big warm open-mouthed smile with friendly smile lines, a black double-breasted chef jacket with white piping and two rows of white buttons, a black apron tied at the waist, black legs";
+const MARIA = "MARIA, the female owner and chef: a classic yellow toy-brick minifigure with black hair pulled back into a low braided bun with a red ribbon bow on the side, warm brown eyes with lashes, a red-lipped smile, a small beauty mark on her cheek, pearl stud earrings and a pearl necklace, a black double-breasted chef jacket with white piping and white buttons, black trousers and bright yellow sneakers";
+const MARIA_CASUAL = "MARIA, the female owner, in her party outfit: a classic yellow toy-brick minifigure with long wavy dark-brown hair, yellow sunglasses, a confident smile with red lips, a black-and-white striped tank top, black shorts with white stripes and bright yellow sneakers";
+
+// Toy-brick dioramas per theme, always starring Perico and Maria.
+// Each call picks a random scene, camera, light and extra detail, so repeated generations stay on topic but look different.
 const THEME_TOY = {
   lactosa: {
     bg: "soft almond cream (#efe7da)",
     scenes: [
-      "a cheerful brick-built dairy cow wearing tiny sunglasses lounging in a deck chair, taking the day off, next to a chef figure holding a glass of oat milk",
-      "a barista figure behind a tiny café counter frothing oat milk, a brick-built cow peeking in through the window with a curious smile",
-      "a cow figure relaxing in a small inflatable pool with a cocktail umbrella, while a chef figure carries a carton of almond milk past",
-      "a farmer figure and a cow on a tiny meadow waving goodbye to an old milk churn being carried away on a little cart",
-      "a chef figure pouring a creamy plant-based sauce from a jug into a pan, a cow figure giving a thumbs up from behind a fence",
-      "a cow figure reading a newspaper on a park bench under a small tree, a chef figure nearby whisking oat cream in a bowl",
+      "a brick-built dairy cow with tiny sunglasses lounging in a deck chair, taking the day off, while Perico hands her a glass of oat milk and Maria laughs beside them",
+      "Perico behind a tiny café counter frothing oat milk, Maria serving a cup to a curious cow peeking in through the window",
+      "a cow relaxing in a small inflatable pool with a cocktail umbrella, Perico and Maria carrying a big carton of almond milk past her",
+      "Perico and Maria on a tiny meadow waving goodbye to an old milk churn being carried away on a little cart by a happy cow",
+      "Maria pouring a creamy plant-based sauce from a jug into a pan held by Perico, a cow giving a thumbs up from behind a fence",
+      "a cow reading a newspaper on a park bench, Perico and Maria next to her whisking oat cream in a big bowl",
     ],
   },
   marisco: {
     bg: "pale sea blue (#dce8ee)",
     scenes: [
-      "a fisherman figure in a yellow raincoat standing in a small wooden boat, proudly holding up a big prawn, a crab and a fish on deck",
-      "a diver figure in a vintage brass helmet on the sea floor, collecting mussels and clams into a basket, small fish swimming around",
-      "a fisherman figure on a tiny wooden pier hauling up a net full of prawns, mussels and a surprised octopus",
-      "a chef figure on a small beach grilling prawns on a little barbecue next to a striped parasol and a lifebuoy",
-      "a lighthouse keeper figure at the foot of a small red and white lighthouse holding a lobster, waves made of transparent blue bricks",
-      "two fisherman figures in a little rowing boat pulling a giant crab out of the water, splashes of transparent blue bricks",
+      "Perico and Maria in a small wooden boat, Perico proudly holding up a giant prawn while Maria holds a crab, a fish on deck",
+      "Perico in a vintage brass diving helmet on the sea floor handing mussels to Maria, who collects them in a basket from a tiny boat above",
+      "Perico and Maria on a tiny wooden pier hauling up a net full of prawns, mussels and a surprised octopus",
+      "Perico grilling prawns on a little beach barbecue while Maria relaxes under a striped parasol holding a lemon",
+      "Perico and Maria at the foot of a small red-and-white lighthouse, Maria holding up a lobster, waves of transparent blue bricks",
+      "Perico and Maria in a little rowing boat pulling a giant crab out of the water together, splashes of transparent blue bricks",
     ],
   },
   gluten: {
     bg: "warm sand (#f3e2c0)",
     scenes: [
-      "a farmer figure in a straw hat standing in a small Valencian rice field holding a sack of rice, a tiny barraca cottage behind",
-      "a farmer figure driving a tiny tractor through golden rice paddies, a heron figure standing in the water",
-      "a chef figure stirring a giant paella pan over a small wood fire, rice, saffron and rabbit pieces in the pan",
-      "a farmer figure in a small flat-bottomed boat gliding through a flooded rice field at sunset, reeds around",
-      "a miller figure next to a small windmill pouring rice and corn into sacks, a little donkey waiting with a cart",
-      "a farmer figure harvesting golden rice with a sickle, a stack of rice bundles beside him and a small scarecrow",
+      "Perico in a straw hat over his cap carrying a sack of rice through a small Valencian rice field, Maria waving from a tiny barraca cottage",
+      "Perico driving a tiny tractor through golden rice paddies with Maria sitting on the back, a heron standing in the water",
+      "Perico stirring a giant paella pan over a small wood fire while Maria adds saffron, rice and rabbit pieces in the pan",
+      "Perico punting a small flat-bottomed boat through a flooded rice field at sunset, Maria sitting in front holding a basket of rice",
+      "Perico and Maria next to a small windmill filling sacks with rice and corn, a little donkey waiting with a cart",
+      "Maria harvesting golden rice with a sickle while Perico stacks the rice bundles, a small scarecrow watching",
     ],
   },
   vegetariano: {
     bg: "soft sage green (#e2e6cf)",
     scenes: [
-      "a gardener figure with a watering can tending a small vegetable garden with tomatoes, artichokes, peppers and lettuces",
-      "a market vendor figure behind a tiny striped market stall piled with colourful vegetables, a customer figure choosing an aubergine",
-      "a gardener figure pushing a wheelbarrow full of giant pumpkins and carrots past a small greenhouse",
-      "a chef figure harvesting herbs from a raised wooden bed, basil, rosemary and mint growing around",
-      "a farmer figure on a ladder picking oranges from a small orange tree, baskets of fruit and leeks on the ground",
-      "a gardener figure sitting on a giant brick-built tomato, having a picnic with a tiny basket of vegetables",
+      "Perico with a watering can and Maria with a basket tending a small vegetable garden with tomatoes, artichokes, peppers and lettuces",
+      "Maria behind a tiny striped market stall piled with colourful vegetables, Perico choosing an aubergine with a big grin",
+      "Perico pushing a wheelbarrow full of giant pumpkins and carrots past a small greenhouse, Maria riding on top of the pumpkins",
+      "Perico and Maria harvesting herbs from a raised wooden bed, basil, rosemary and mint growing around them",
+      "Maria on a ladder picking oranges from a small orange tree, Perico below catching them in a basket next to a pile of leeks",
+      "Perico and Maria sitting on a giant brick-built tomato having a picnic with a tiny basket of vegetables",
     ],
   },
   freaky: {
     bg: "warm peach (#f5d6c8)",
+    party: true,
     scenes: [
-      "a party figure in a disco wig dancing on a tiny stage under a mirror ball, carrying a tray of finger food, confetti in the air",
-      "a DJ figure with headphones behind tiny turntables, a waiter figure on roller skates serving mini skewers",
-      "a chef figure in sunglasses juggling small tapas and mini burgers, colourful balloons floating around",
-      "a party bus with figures waving out of the windows, one holding a tray of tiny canapés, streamers flying",
-      "a magician figure pulling a tray of finger food out of a top hat, a surprised waiter figure next to him",
-      "figures in party hats around a tiny round table loaded with mini tacos and croquettes, a cake with sparklers in the middle",
+      "Maria dancing on a tiny stage under a mirror ball while Perico carries a tray of finger food, confetti in the air",
+      "Maria as DJ with headphones behind tiny turntables, Perico on roller skates serving mini skewers",
+      "Perico in sunglasses juggling small tapas and mini burgers, Maria cheering with a glass, colourful balloons floating around",
+      "Perico driving a tiny party bus with Maria waving out of the window holding a tray of canapés, streamers flying",
+      "Perico as a magician pulling a tray of finger food out of a top hat, Maria clapping in surprise",
+      "Perico and Maria in party hats at a tiny round table loaded with mini tacos and croquettes, a cake with sparklers in the middle",
     ],
   },
   cocido: {
     bg: "dusty rose (#ecd3cf)",
     scenes: [
-      "a chef figure in a white hat stirring a big clay pot of hearty stew with a long wooden spoon, chickpeas, a carrot and a sausage beside the pot",
-      "a grandmother figure in an apron tasting the stew from a wooden spoon next to a cast-iron stove, steam rising",
-      "two chef figures carrying a huge steaming pot between them on wooden poles, chickpeas rolling on the ground",
-      "a family of figures sitting around a small wooden table sharing bowls of stew, a big pot in the middle",
-      "a chef figure in a cosy winter kitchen with a fireplace, a pot simmering, strings of chorizo hanging from the ceiling",
-      "a market figure carrying a basket of chickpeas, cabbage, carrots and chorizo towards a little stall with a big pot",
+      "Perico stirring a big clay pot of hearty stew with a long wooden spoon while Maria tastes from a ladle, chickpeas, a carrot and a sausage beside the pot",
+      "Maria tasting the stew from a wooden spoon next to a cast-iron stove, Perico giving a thumbs up, steam rising",
+      "Perico and Maria carrying a huge steaming pot between them on wooden poles, chickpeas rolling on the ground",
+      "Perico and Maria sitting at a small wooden table sharing bowls of stew, a big pot in the middle",
+      "Perico and Maria in a cosy winter kitchen with a fireplace, a pot simmering, strings of chorizo hanging from the ceiling",
+      "Maria carrying a basket of chickpeas, cabbage, carrots and chorizo towards Perico, who stands at a little stall with a big pot",
     ],
   },
   none: {
     bg: "warm off-white",
     scenes: [
-      "a smiling chef figure in a white hat presenting a small covered serving dish",
-      "a waiter figure with a towel over the arm carrying a tray with a small bell-shaped dish cover",
-      "a chef figure tasting from a spoon next to a little stove with two pots",
+      "Perico and Maria side by side presenting a small covered serving dish, both smiling",
+      "Perico carrying a tray with a bell-shaped dish cover while Maria lifts the lid",
+      "Perico tasting from a spoon next to a little stove with two pots while Maria holds up a kitchen torch",
     ],
   },
 };
@@ -191,7 +197,12 @@ function buildPrompt(en, theme) {
   if (!d.length) return "";
   const t = THEME_TOY[theme] || THEME_TOY.none;
   const scene = pick(t.scenes), camera = pick(VARIANCE.camera), light = pick(VARIANCE.light), detail = pick(VARIANCE.detail), base = pick(VARIANCE.base);
-  return `Charming toy photography of a small diorama built from plastic building bricks, centred in a wide landscape frame: ${scene}. Extra touch: ${detail}. The figures are classic toy-brick minifigures with simple painted faces and lively, characterful expressions and poses.
+  return `Charming toy photography of a small diorama built from plastic building bricks, centred in a wide landscape frame: ${scene}. Extra touch: ${detail}.
+
+The two main characters must be clearly recognisable and appear exactly once each, with these exact features (match the character reference images when given):
+- ${PERICO}.
+- ${t.party ? MARIA_CASUAL : MARIA}.
+Keep them as genuine toy-brick minifigures (blocky torso, cylindrical head, C-shaped hands, printed face details), not realistic people. Any other figures or animals are small side characters.
 
 Composition: the diorama sits in the centre ${base}, ${camera}, with calm empty space around it. Seamless, plain studio background in ${t.bg}, the same colour from edge to edge, no horizon line, no props outside the diorama.
 
@@ -257,4 +268,5 @@ async function translate(esList) {
   return out;
 }
 
-module.exports = { env, modelPath, json, checkPassword, readBody, freepik, ASPECT, buildPrompt, translate };
+module.exports = {
+  characterRefs: (theme) => (THEME_TOY[theme] && THEME_TOY[theme].party) ? ["ref-perico.jpg", "ref-maria-casual.jpg"] : ["ref-perico.jpg", "ref-maria.jpg"], env, modelPath, json, checkPassword, readBody, freepik, ASPECT, buildPrompt, translate };

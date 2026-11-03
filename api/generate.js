@@ -27,20 +27,22 @@ module.exports = async (req, res) => {
       aspect_ratio: aspect,
       resolution: L.env("IMAGE_RESOLUTION", "1K").toUpperCase(),
     };
-    // Style reference: the illustration the restaurant chose, served from this app.
+    // Character references: the two owners as minifigures, served from this app.
     const host = req.headers["x-forwarded-host"] || req.headers.host;
-    const styleRef = L.env("STYLE_REFERENCE", "off") === "on" && host
-      ? [{ image: `https://${host}/style-ref.jpg`, mime_type: "image/jpeg",
-           text: "Style reference only: copy the drawing technique, paper background, color palette, black tableware and composition style. Do not copy these dishes." }]
+    const refs = host && L.env("CHARACTER_REFERENCE", "on") !== "off"
+      ? L.characterRefs(theme).map((f) => ({
+          image: `https://${host}/${f}`, mime_type: "image/jpeg",
+          text: f.includes("perico") ? "Character reference for PERICO: keep his face, glasses, curly hair, cap and black chef outfit."
+               : "Character reference for MARIA: keep her face, hairstyle, red ribbon, pearls and outfit." }))
       : null;
     let data;
     try {
       data = await L.freepik(`/text-to-image/${L.modelPath()}`, {
         method: "POST",
-        body: JSON.stringify(styleRef ? { ...payload, reference_images: styleRef } : payload),
+        body: JSON.stringify(refs ? { ...payload, reference_images: refs } : payload),
       });
     } catch (e) {
-      if (!styleRef || (e.status && e.status !== 400 && e.status !== 422)) throw e;
+      if (!refs || (e.status && e.status !== 400 && e.status !== 422)) throw e;
       data = await L.freepik(`/text-to-image/${L.modelPath()}`, { method: "POST", body: JSON.stringify(payload) });
     }
     const task = (data && data.data) || data || {};
