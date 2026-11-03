@@ -54,7 +54,7 @@ button:disabled{opacity:.35;cursor:default}
 /* layout */
 .grid{display:grid;grid-template-columns:minmax(0,1fr) minmax(0,440px);gap:64px;align-items:start}
 .steps{display:grid;gap:0}
-.step{display:grid;grid-template-columns:72px minmax(0,1fr);gap:24px;padding:28px 0;border-top:1.5px solid var(--rule-soft)}
+.step{display:grid;grid-template-columns:minmax(0,1fr);padding:28px 0;border-top:1.5px solid var(--rule-soft)}
 .step:first-child{border-top:0;padding-top:0}
 .step .n{font-size:11px;letter-spacing:.22em;text-transform:uppercase;color:var(--ink-soft);padding-top:8px}
 .step .n b{display:block;font-weight:400;color:var(--ink);font-size:11px;margin-bottom:2px}
@@ -107,6 +107,8 @@ h2{font-weight:400;letter-spacing:.22em;text-transform:uppercase;font-size:11px;
 .cardwrap{background:var(--wash);padding:20px;display:grid;place-items:center}
 #cardCanvas{display:block;width:100%;max-width:400px;height:auto;background:#fff;box-shadow:0 1px 0 rgba(0,0,0,.06),0 0 0 1px var(--rule-soft)}
 .preview .links{display:flex;gap:20px;flex-wrap:wrap}
+.dlrow{display:grid;grid-template-columns:1fr;gap:10px}
+.dlrow.two{grid-template-columns:1.4fr 1fr}
 .preview .btn{width:100%}
 
 /* password gate */
@@ -132,7 +134,8 @@ h2{font-weight:400;letter-spacing:.22em;text-transform:uppercase;font-size:11px;
   .dish input.es{font-size:19px}
   .dish input.en{font-size:15px}
   .seg{max-width:none}
-  .action,#dl,#dlIll,#redo{display:none}
+  .action,#dl,#redo{display:none}
+  .dlrow.two{grid-template-columns:1fr}
   .preview{position:static}
   .cardwrap{padding:0;background:none}
   #cardCanvas{max-width:100%}
@@ -171,7 +174,6 @@ h2{font-weight:400;letter-spacing:.22em;text-transform:uppercase;font-size:11px;
     <form class="steps" id="form">
 
       <section class="step">
-        <div class="n"><b>01</b>Día</div>
         <div class="body">
           <div class="fields">
             <div class="field">
@@ -201,7 +203,6 @@ h2{font-weight:400;letter-spacing:.22em;text-transform:uppercase;font-size:11px;
       </section>
 
       <section class="step">
-        <div class="n"><b>02</b>Platos</div>
         <div class="body">
           <div class="dishes" id="dishes"></div>
           <div class="addrow">
@@ -220,7 +221,6 @@ h2{font-weight:400;letter-spacing:.22em;text-transform:uppercase;font-size:11px;
       </section>
 
       <section class="step">
-        <div class="n"><b>03</b>Formato</div>
         <div class="body">
           <div class="seg" role="group" aria-label="Formato de la carta">
             <button type="button" data-aspect="4:5" aria-pressed="true">Post · 4:5</button>
@@ -233,7 +233,6 @@ h2{font-weight:400;letter-spacing:.22em;text-transform:uppercase;font-size:11px;
       </section>
 
       <section class="step action" id="actionStep">
-        <div class="n"><b>04</b>Listo</div>
         <div class="body">
           <div id="storyAction"><button type="submit" class="btn" id="go">Crear ilustración</button></div>
           <p class="hint" id="postReady" hidden>La carta está lista. Descárgala desde la vista previa.</p>
@@ -247,13 +246,15 @@ h2{font-weight:400;letter-spacing:.22em;text-transform:uppercase;font-size:11px;
       <div class="top">
         <h2 id="ch">Carta</h2>
         <div class="links">
-          <button type="button" class="link" id="dlIll" disabled>Solo ilustración</button>
           <button type="button" class="link" id="redo" hidden>Otra ilustración</button>
         </div>
       </div>
       <div class="cardwrap"><canvas id="cardCanvas" aria-label="Vista previa de la carta"></canvas></div>
       <p class="hint" id="staleNote" hidden></p>
-      <button type="button" class="btn" id="dl">Descargar</button>
+      <div class="dlrow">
+        <button type="button" class="btn" id="dl">Descargar carta</button>
+        <button type="button" class="btn ghost" id="dlIll" hidden>Solo imagen</button>
+      </div>
       <p class="msg" id="dlMsg" role="status"></p>
     </section>
   </div>
@@ -555,10 +556,9 @@ function renderCard(){
   const note=$("staleNote");
   if(stale){note.hidden=false;note.textContent=(state.aspectUsed&&state.aspectUsed!==fmt().img)?"Formato cambiado: la ilustración se recorta. Crea una nueva para que encaje bien.":"Platos cambiados: la ilustración ya no coincide. Crea una nueva."}
   else note.hidden=true;
-  $("dlIll").disabled=!state.image;
   const post=state.aspect==="4:5";
   $("prog").hidden=post||$("prog").hidden;
-  $("dlIll").hidden=post;
+  $("dlIll").hidden=post||!state.image;$("dlIll").closest(".dlrow").classList.toggle("two",!$("dlIll").hidden);
   $("postHint").hidden=!post;$("storyHint").hidden=post;$("storyAction").hidden=post;$("postReady").hidden=!post;
   $("go").textContent=stale?"Crear ilustración nueva":(state.image?"Crear otra ilustración":"Crear ilustración");
   $("redo").hidden=!state.image||isPhone()||state.aspect==="4:5";
@@ -653,7 +653,19 @@ $("mRedo").onclick=regenerate;$("redo").onclick=regenerate;
 $("mView").onclick=()=>{const sec=$("cartaSec");const r=sec.getBoundingClientRect();
   if(r.top<80&&r.bottom>0)window.scrollTo({top:0,behavior:"smooth"});else sec.scrollIntoView({behavior:"smooth",block:"start"})};
 window.addEventListener("scroll",()=>{const r=$("cartaSec").getBoundingClientRect();$("mView").textContent=(r.top<120)?"Editar menú":"Ver carta"},{passive:true});
-$("dlIll").onclick=async()=>{if(!state.image)return;const b=await (await fetch(state.image)).blob();download(b,"ilustracion-"+state.date+(state.image.startsWith("data:image/jpeg")?".jpg":".png"))};
+$("dlIll").onclick=async()=>{
+  if(!state.image)return;
+  try{
+    const b=await (await fetch(state.image)).blob();
+    const name="imagen-"+state.date+(b.type==="image/png"?".png":".jpg");
+    const file=new File([b],name,{type:b.type||"image/jpeg"});
+    if(isPhone()&&navigator.canShare&&navigator.canShare({files:[file]})){
+      try{await navigator.share({files:[file],title:"Imagen del menú"});setMsg("dlMsg","Listo.","ok");return}
+      catch(e){if(e&&e.name==="AbortError")return}
+    }
+    download(b,name);setMsg("dlMsg","Imagen descargada.","ok");
+  }catch(e){setMsg("dlMsg","No se pudo descargar la imagen.","err")}
+};
 
 /* ---------- boot ---------- */
 if(state.numManual===undefined)state.numManual=!!(state.num&&state.num.trim());
