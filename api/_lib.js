@@ -211,16 +211,18 @@ function buildPrompt(en, theme) {
   const scene = pick(t.scenes), camera = pick(VARIANCE.camera), light = pick(VARIANCE.light), detail = pick(VARIANCE.detail), base = pick(VARIANCE.base);
   return `Charming toy photography of a small diorama built from plastic building bricks, centred in a wide landscape frame: ${scene}. Extra touch: ${detail}.${d[0] && theme !== "cerrado" ? `\n\nToday's first course is "${d[0]}". Weave a playful nod to it into the scene: its main ingredient (for example artichokes, oranges, prawns or chickpeas) appears as a small brick-built prop that Perico or Maria holds, carries or uses, or as a small detail on the base. It is a recognisable accent, not the main subject, and it fits naturally into the scene.` : ""}
 
-The two main characters must be clearly recognisable and appear exactly once each, with these exact features (match the character reference images when given):
+CAST, very important: there are exactly TWO minifigures in the whole image, Perico once and Maria once. Never show Perico twice, never show Maria twice, no clones, no reflections of them, no third person, no extra minifigures, no crowd, no waiters, customers or bystanders. Animals and objects are allowed as small props, people are not.
+
+The two characters must be clearly recognisable, with these exact features (match the character reference images when given):
 - ${PERICO}.
 - ${t.party ? MARIA_CASUAL : MARIA}.
-${t.scifi ? "In this scene both wear original retro sci-fi space-explorer outfits (simple space suits in grey, white and dark blue, small helmets or headsets), while keeping their faces, Perico's glasses and curly hair and Maria's hairstyle recognisable. Generic original sci-fi design only: no lightsabers, no robes, no helmets, ships, droids or costumes from any existing film franchise.\n" : ""}Keep them as genuine toy-brick minifigures (blocky torso, cylindrical head, C-shaped hands, printed face details), not realistic people. Any other figures or animals are small side characters.
+${t.scifi ? "In this scene both wear original retro sci-fi space-explorer outfits (simple space suits in grey, white and dark blue, small helmets or headsets), while keeping their faces, Perico's glasses and curly hair and Maria's hairstyle recognisable. Generic original sci-fi design only: no lightsabers, no robes, no helmets, ships, droids or costumes from any existing film franchise.\n" : ""}Keep them as genuine toy-brick minifigures (blocky torso, cylindrical head, C-shaped hands, printed face details), not realistic people. Before finishing, count the minifigures: there must be exactly two, one Perico and one Maria.
 
 Composition: the diorama sits in the centre ${base}, ${camera}, with calm empty space around it. Seamless, plain studio background in ${t.bg}, the same colour from edge to edge, no horizon line, no props outside the diorama.
 
 Look: high-end macro product photography${t.scifi ? ", moody low-key lighting in dark greys with a few small cool blue light accents" : ""}, glossy plastic with realistic reflections, ${light}, soft shadow under the base, shallow depth of field, crisp focus on the main figure, clean and minimal, playful but stylish. Make this scene feel fresh and different, with its own composition and storytelling.
 
-No text, letters, numbers, logos or brand names anywhere, no printed labels on the bricks, no packaging.`;
+Exactly two minifigures in total. No text, letters, numbers, logos or brand names anywhere, no printed labels on the bricks, no packaging.`;
 }
 
 // "Vegetable Soup" -> "Vegetable soup"; words capitalized in the Spanish source (Sacher, Spätzle) keep their capital.
