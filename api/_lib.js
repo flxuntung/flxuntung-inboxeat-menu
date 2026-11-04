@@ -106,10 +106,10 @@ const THEME_TOY = {
     bg: "warm sand (#f3e2c0)",
     scenes: [
       "Perico in a straw hat over his cap carrying a sack of rice through a small Valencian rice field, Maria waving from a tiny barraca cottage",
-      "Perico driving a tiny tractor through golden rice paddies with Maria sitting on the back, a heron standing in the water",
+      "Perico driving a tiny tractor through golden rice paddies with Maria sitting on the back",
       "Perico stirring a giant paella pan over a small wood fire while Maria adds saffron, rice and rabbit pieces in the pan",
       "Perico punting a small flat-bottomed boat through a flooded rice field at sunset, Maria sitting in front holding a basket of rice",
-      "Perico and Maria next to a small windmill filling sacks with rice and corn, a little donkey waiting with a cart",
+      "Perico and Maria next to a small windmill filling sacks with rice and corn, a little wooden cart waiting",
       "Maria harvesting golden rice with a sickle while Perico stacks the rice bundles, a small scarecrow watching",
     ],
   },
@@ -185,14 +185,16 @@ const VARIANCE = {
     "soft overcast diffused light",
     "gentle rim light from behind with a soft fill from the front",
   ],
-  detail: [
-    "a tiny seagull or bird figure somewhere in the scene",
-    "a small cat figure watching from the side",
-    "a little potted plant on the base",
-    "a tiny sign-free crate or barrel as an extra prop",
-    "a small dog figure wagging its tail",
-    "no extra detail, keep it very clean",
-    "a few loose bricks lying casually on the base",
+  // a quiet nod to Valencia, one per image, never patriotic (no flags, no coats of arms)
+  valencia: [
+    "a small potted orange tree with a few oranges",
+    "a strip of blue-and-white Valencian ceramic tiles along the edge of the base",
+    "a tiny sprig of orange blossom",
+    "a small palm tree in a terracotta pot",
+    "a little terracotta jug and a woven esparto basket",
+    "a hint of a modernist arched window like the old markets of Valencia",
+    "a few oranges in a small wooden crate",
+    "a small wrought-iron balcony railing with a flower pot",
   ],
   base: [
     "on a small round base",
@@ -208,10 +210,10 @@ function buildPrompt(en, theme) {
   const d = en.map((s) => String(s || "").trim()).filter(Boolean);
   if (!d.length && theme !== "cerrado") return "";
   const t = THEME_TOY[theme] || THEME_TOY.none;
-  const scene = pick(t.scenes), camera = pick(VARIANCE.camera), light = pick(VARIANCE.light), detail = pick(VARIANCE.detail), base = pick(VARIANCE.base);
-  return `Charming toy photography of a small diorama built from plastic building bricks, centred in a wide landscape frame: ${scene}. Extra touch: ${detail}.${d[0] && theme !== "cerrado" ? `\n\nToday's first course is "${d[0]}". Weave a playful nod to it into the scene: its main ingredient (for example artichokes, oranges, prawns or chickpeas) appears as a small brick-built prop that Perico or Maria holds, carries or uses, or as a small detail on the base. It is a recognisable accent, not the main subject, and it fits naturally into the scene.` : ""}
+  const scene = pick(t.scenes), camera = pick(VARIANCE.camera), light = pick(VARIANCE.light), detail = pick(VARIANCE.valencia), base = pick(VARIANCE.base);
+  return `Charming toy photography of a small diorama built from plastic building bricks, centred in a wide landscape frame: ${scene}. A quiet, subtle touch of Valencia somewhere in the diorama: ${detail}. Keep it small and natural, no flags, no coats of arms, no patriotic symbols.${d[0] && theme !== "cerrado" ? `\n\nToday's first course is "${d[0]}". Weave a playful nod to it into the scene: its main ingredient (for example artichokes, oranges, prawns or chickpeas) appears as a small brick-built prop that Perico or Maria holds, carries or uses, or as a small detail on the base. It is a recognisable accent, not the main subject, and it fits naturally into the scene.` : ""}
 
-CAST, very important: there are exactly TWO minifigures in the whole image, Perico once and Maria once. Never show Perico twice, never show Maria twice, no clones, no reflections of them, no third person, no extra minifigures, no crowd, no waiters, customers or bystanders. Animals and objects are allowed as small props, people are not.
+CAST, very important: there are exactly TWO minifigures in the whole image, Perico once and Maria once. Never show Perico twice, never show Maria twice, no clones, no reflections of them, no third person, no extra minifigures, no crowd, no waiters, customers or bystanders. No pets or incidental animals either (no dogs, cats, birds or seagulls); only animals that are part of the scene itself, such as seafood, are allowed.
 
 The two characters must be clearly recognisable, with these exact features (match the character reference images when given):
 - ${PERICO}.
