@@ -189,12 +189,22 @@ const VARIANCE = {
   valencia: [
     "a small potted orange tree with a few oranges",
     "a strip of blue-and-white Valencian ceramic tiles along the edge of the base",
-    "a tiny sprig of orange blossom",
+    "a sprig of orange blossom",
     "a small palm tree in a terracotta pot",
     "a little terracotta jug and a woven esparto basket",
-    "a hint of a modernist arched window like the old markets of Valencia",
     "a few oranges in a small wooden crate",
     "a small wrought-iron balcony railing with a flower pot",
+    "a classic Valencian wicker chair",
+  ],
+  landmark: [
+    "a miniature of the Torres de Serranos medieval city gate",
+    "a miniature of the Miguelete bell tower of the cathedral",
+    "a miniature of the domes and modernist arches of the Mercado Central",
+    "a miniature of the white curved architecture of the City of Arts and Sciences",
+    "a miniature Albufera barraca cottage with its steep thatched roof and reeds",
+    "a miniature stretch of the Turia gardens with palm trees and an old stone bridge",
+    "a miniature of the Estación del Norte facade with its orange-and-white decoration",
+    "a miniature of the Lonja de la Seda gothic facade",
   ],
   base: [
     "on a small round base",
@@ -210,8 +220,11 @@ function buildPrompt(en, theme) {
   const d = en.map((s) => String(s || "").trim()).filter(Boolean);
   if (!d.length && theme !== "cerrado") return "";
   const t = THEME_TOY[theme] || THEME_TOY.none;
-  const scene = pick(t.scenes), camera = pick(VARIANCE.camera), light = pick(VARIANCE.light), detail = pick(VARIANCE.valencia), base = pick(VARIANCE.base);
-  return `Charming toy photography of a small diorama built from plastic building bricks, centred in a wide landscape frame: ${scene}. A quiet, subtle touch of Valencia somewhere in the diorama: ${detail}. Keep it small and natural, no flags, no coats of arms, no patriotic symbols.${d[0] && theme !== "cerrado" ? `\n\nToday's first course is "${d[0]}". Weave a playful nod to it into the scene: its main ingredient (for example artichokes, oranges, prawns or chickpeas) appears as a small brick-built prop that Perico or Maria holds, carries or uses, or as a small detail on the base. It is a recognisable accent, not the main subject, and it fits naturally into the scene.` : ""}
+  const scene = pick(t.scenes), camera = pick(VARIANCE.camera), light = pick(VARIANCE.light), base = pick(VARIANCE.base);
+  const landmark = pick(VARIANCE.landmark);
+  const v1 = pick(VARIANCE.valencia);
+  let v2 = pick(VARIANCE.valencia); while (v2 === v1) v2 = pick(VARIANCE.valencia);
+  return `Charming toy photography of a small diorama built from plastic building bricks, centred in a wide landscape frame: ${scene}. The scene clearly takes place in Valencia, Spain: at the back of the diorama stands ${landmark}, built from bricks, smaller than the figures' main action and slightly out of focus. Add two small Valencian details on the base: ${v1}, and ${v2}. Warm Mediterranean feeling, natural and charming, no flags, no coats of arms, no patriotic symbols.${d[0] && theme !== "cerrado" ? `\n\nToday's first course is "${d[0]}". Weave a playful nod to it into the scene: its main ingredient (for example artichokes, oranges, prawns or chickpeas) appears as a small brick-built prop that Perico or Maria holds, carries or uses, or as a small detail on the base. It is a recognisable accent, not the main subject, and it fits naturally into the scene.` : ""}
 
 CAST, very important: there are exactly TWO minifigures in the whole image, Perico once and Maria once. Never show Perico twice, never show Maria twice, no clones, no reflections of them, no third person, no extra minifigures, no crowd, no waiters, customers or bystanders. No pets or incidental animals either (no dogs, cats, birds or seagulls); only animals that are part of the scene itself, such as seafood, are allowed.
 
