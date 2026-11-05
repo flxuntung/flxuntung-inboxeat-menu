@@ -97,7 +97,7 @@ const THEME_TOY = {
       "Perico and Maria in a small wooden boat, Perico proudly holding up a giant prawn while Maria holds a crab, a fish on deck",
       "Perico in a vintage brass diving helmet on the sea floor handing mussels to Maria, who collects them in a basket from a tiny boat above",
       "Perico and Maria on a tiny wooden pier hauling up a net full of prawns, mussels and a surprised octopus",
-      "Perico grilling prawns on a little beach barbecue while Maria relaxes under a striped parasol holding a lemon",
+      "Perico grilling seafood from today's menu on a little beach barbecue while Maria relaxes under a striped parasol",
       "Perico and Maria at the foot of a small red-and-white lighthouse, Maria holding up a lobster, waves of transparent blue bricks",
       "Perico and Maria in a little rowing boat pulling a giant crab out of the water together, splashes of transparent blue bricks",
     ],
@@ -116,12 +116,12 @@ const THEME_TOY = {
   vegetariano: {
     bg: "soft sage green (#e2e6cf)",
     scenes: [
-      "Perico with a watering can and Maria with a basket tending a small vegetable garden with tomatoes, artichokes, peppers and lettuces",
-      "Maria behind a tiny striped market stall piled with colourful vegetables, Perico choosing an aubergine with a big grin",
-      "Perico pushing a wheelbarrow full of giant pumpkins and carrots past a small greenhouse, Maria riding on top of the pumpkins",
-      "Perico and Maria harvesting herbs from a raised wooden bed, basil, rosemary and mint growing around them",
-      "Maria on a ladder picking oranges from a small orange tree, Perico below catching them in a basket next to a pile of leeks",
-      "Perico and Maria sitting on a giant brick-built tomato having a picnic with a tiny basket of vegetables",
+      "Perico with a watering can and Maria with a basket tending a small vegetable garden where today's menu ingredients are growing",
+      "Maria behind a tiny striped market stall piled with today's menu ingredients, Perico choosing one with a big grin",
+      "Perico pushing a wheelbarrow full of oversized ingredients from today's menu past a small greenhouse, Maria riding on top",
+      "Perico and Maria harvesting from a raised wooden bed full of the vegetables and herbs of today's menu",
+      "Maria and Perico at a little wooden kitchen table outdoors, chopping and preparing the vegetables of today's menu, a small pot simmering beside them",
+      "Perico and Maria sitting on the giant brick-built main vegetable of today's menu, having a picnic",
     ],
   },
   freaky: {
@@ -144,7 +144,7 @@ const THEME_TOY = {
       "Perico and Maria carrying a huge steaming pot between them on wooden poles, chickpeas rolling on the ground",
       "Perico and Maria sitting at a small wooden table sharing bowls of stew, a big pot in the middle",
       "Perico and Maria in a cosy winter kitchen with a fireplace, a pot simmering, strings of chorizo hanging from the ceiling",
-      "Maria carrying a basket of chickpeas, cabbage, carrots and chorizo towards Perico, who stands at a little stall with a big pot",
+      "Maria carrying a basket with the ingredients of today's menu towards Perico, who stands at a little stall with a big pot",
     ],
   },
   cerrado: {
@@ -185,16 +185,18 @@ const VARIANCE = {
     "soft overcast diffused light",
     "gentle rim light from behind with a soft fill from the front",
   ],
-  // a quiet nod to Valencia, one per image, never patriotic (no flags, no coats of arms)
+  // Valencian details: architecture and craft only, never food (no oranges), so the food stays the menu's
   valencia: [
-    "a small potted orange tree with a few oranges",
     "a strip of blue-and-white Valencian ceramic tiles along the edge of the base",
-    "a sprig of orange blossom",
     "a small palm tree in a terracotta pot",
     "a little terracotta jug and a woven esparto basket",
-    "a few oranges in a small wooden crate",
-    "a small wrought-iron balcony railing with a flower pot",
+    "a small wrought-iron balcony railing with red geraniums",
     "a classic Valencian wicker chair",
+    "green wooden window shutters on a small ochre wall",
+    "a small modernist arched window with coloured glass",
+    "an old-fashioned iron street lamp",
+    "a little traditional wooden Albufera boat",
+    "a hand-painted blue ceramic plate leaning against a wall",
   ],
   landmark: [
     "a miniature of the Torres de Serranos medieval city gate",
@@ -203,7 +205,7 @@ const VARIANCE = {
     "a miniature of the white curved architecture of the City of Arts and Sciences",
     "a miniature Albufera barraca cottage with its steep thatched roof and reeds",
     "a miniature stretch of the Turia gardens with palm trees and an old stone bridge",
-    "a miniature of the Estación del Norte facade with its orange-and-white decoration",
+    "a miniature of the modernist Estación del Norte facade",
     "a miniature of the Lonja de la Seda gothic facade",
   ],
   base: [
@@ -224,7 +226,7 @@ function buildPrompt(en, theme) {
   const landmark = pick(VARIANCE.landmark);
   const v1 = pick(VARIANCE.valencia);
   let v2 = pick(VARIANCE.valencia); while (v2 === v1) v2 = pick(VARIANCE.valencia);
-  return `Charming toy photography of a small diorama built from plastic building bricks, centred in a wide landscape frame: ${scene}. The scene clearly takes place in Valencia, Spain: at the back of the diorama stands ${landmark}, built from bricks, smaller than the figures' main action and slightly out of focus. Add two small Valencian details on the base: ${v1}, and ${v2}. Warm Mediterranean feeling, natural and charming, no flags, no coats of arms, no patriotic symbols.${d[0] && theme !== "cerrado" ? `\n\nToday's first course is "${d[0]}". Weave a playful nod to it into the scene: its main ingredient (for example artichokes, oranges, prawns or chickpeas) appears as a small brick-built prop that Perico or Maria holds, carries or uses, or as a small detail on the base. It is a recognisable accent, not the main subject, and it fits naturally into the scene.` : ""}
+  return `Charming toy photography of a small diorama built from plastic building bricks, centred in a wide landscape frame: ${scene}. The scene clearly takes place in Valencia, Spain: at the back of the diorama stands ${landmark}, built from bricks, smaller than the figures' main action and slightly out of focus. Add two small Valencian details on the base: ${v1}, and ${v2}. Valencia is shown only through this architecture and these details, never through fruit or food. Warm Mediterranean feeling, natural and charming, no flags, no coats of arms, no patriotic symbols.${d.length && theme !== "cerrado" ? `\n\nTODAY'S MENU, very important: ${d.map((x) => `"${x}"`).join(", ")}. The food in this image comes from this menu. Pick the two or three most recognisable ingredients of these dishes (the first course "${d[0]}" first) and show them clearly as brick-built props that Perico and Maria hold, carry, cook or that sit prominently on the base, big enough to recognise at a glance. If the scene mentions food or "today\'s menu ingredients", use exactly these ingredients. Do not add any other fruit or food that is not part of today\'s menu: no oranges, lemons or other citrus unless the menu contains them.` : ""}
 
 CAST, very important: there are exactly TWO minifigures in the whole image, Perico once and Maria once. Never show Perico twice, never show Maria twice, no clones, no reflections of them, no third person, no extra minifigures, no crowd, no waiters, customers or bystanders. No pets or incidental animals either (no dogs, cats, birds or seagulls); only animals that are part of the scene itself, such as seafood, are allowed.
 
