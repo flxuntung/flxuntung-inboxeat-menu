@@ -90,7 +90,7 @@ textarea{min-height:120px;border:1.5px solid var(--rule-soft);padding:10px;resiz
 .paste-actions{display:flex;gap:16px;align-items:center;flex-wrap:wrap}
 
 /* segmented control */
-.seg{display:grid;grid-template-columns:1fr 1fr;border:1.5px solid var(--rule);max-width:360px}
+.seg{display:grid;grid-template-columns:1fr 1fr 1fr;border:1.5px solid var(--rule);max-width:480px}
 .seg button{background:#fff;color:var(--ink);border:0;padding:12px 10px;letter-spacing:.12em;font-size:11px}
 .seg button+button{border-left:1.5px solid var(--rule)}
 .seg button[aria-pressed="true"]{background:var(--ink);color:#fff}
@@ -248,12 +248,13 @@ h2{font-weight:400;letter-spacing:.22em;text-transform:uppercase;font-size:11px;
       <section class="step">
         <div class="body">
           <div class="seg" role="group" aria-label="Formato de la carta">
-            <button type="button" data-aspect="4:5" aria-pressed="true">Post · 4:5</button>
+            <button type="button" data-aspect="4:5" aria-pressed="true">Post · Texto</button>
+            <button type="button" data-aspect="4:5i" aria-pressed="false">Post · Imagen</button>
             <button type="button" data-aspect="9:16" aria-pressed="false">Story · 9:16</button>
           </div>
-          <select id="aspect" hidden aria-hidden="true"><option value="4:5">4:5</option><option value="9:16">9:16</option></select>
+          <select id="aspect" hidden aria-hidden="true"><option value="4:5">4:5</option><option value="4:5i">4:5 imagen</option><option value="9:16">9:16</option></select>
           <p class="hint" id="postHint" hidden>Post: solo el menú, sin ilustración.</p>
-          <p class="hint" id="storyHint" hidden>Story: con ilustración. Si cambias los platos, crea una nueva.</p>
+          <p class="hint" id="storyHint" hidden>Con ilustración. La misma ilustración sirve para Post y Story. Si cambias los platos, crea una nueva.</p>
         </div>
       </section>
 
@@ -326,9 +327,11 @@ let pw="";
 try{pw=localStorage.getItem(PWKEY)||""}catch(e){}
 try{const s=JSON.parse(localStorage.getItem(KEY)||"null");if(s&&s.dishes)state={...state,...s}}catch(e){}
 const save=()=>{try{localStorage.setItem(KEY,JSON.stringify(state))}catch(e){console.warn("no se pudo guardar el estado",e)}};
-const FORMATS={"4:5":{W:1080,H:1350,img:"16:9"},"9:16":{W:1080,H:1920,img:"16:9"}};
+// minIH: smallest image height as a share of the width (16:9 = 0.5625; the post with image may crop to 2:1 to keep the text readable)
+const FORMATS={"4:5":{W:1080,H:1350,img:"16:9"},"4:5i":{W:1080,H:1350,img:"16:9",minIH:0.5},"9:16":{W:1080,H:1920,img:"16:9"}};
 if(!FORMATS[state.aspect])state.aspect="4:5";
 const fmt=()=>FORMATS[state.aspect]||FORMATS["4:5"];
+const isText=()=>state.aspect==="4:5";
 const sig=d=>JSON.stringify(d.map(x=>(x.es||"").trim().toLowerCase()).filter(Boolean));
 function setMsg(id,t,kind){const m=$(id);m.textContent=t;m.className="msg"+(kind?" "+kind:"");const mm=document.getElementById("mMsg");if(mm&&(id==="msg"||id==="dlMsg")){mm.textContent=t;mm.className="msg"+(kind?" "+kind:"")}}
 
@@ -559,7 +562,7 @@ function drawCard(ctx,W,H,img,textOnly){
   const rRef=Math.min(1.3,((1350-64*0.75-64*1.1)*s)/need);
   if(!textOnly){
     const ihMax=H-pad*0.6-bottomPad-need*rRef;
-    IH=Math.round(Math.max(W*9/16,Math.min(IH,ihMax)));
+    IH=Math.round(Math.max(W*(f.minIH||9/16),Math.min(IH,ihMax)));
   }
   const top=textOnly?pad*0.75:IH+pad*0.6, avail=H-top-bottomPad;
   ctx.fillStyle=dayTint();ctx.fillRect(0,0,W,H);
@@ -593,7 +596,7 @@ function renderCard(){
   rq=requestAnimationFrame(()=>{
     const f=fmt(),c=$("cardCanvas"),PW=900,PH=Math.round(PW*f.H/f.W);
     if(c.width!==PW||c.height!==PH){c.width=PW;c.height=PH}
-    drawCard(c.getContext("2d"),PW,PH,getImg(state.image),state.aspect==="4:5");
+    drawCard(c.getContext("2d"),PW,PH,getImg(state.image),isText());
   });
   const th=THEMES[themeKey()];const autoKey=autoThemeKey(state.date);
   $("themeHint").textContent=(!state.theme||state.theme==="auto")
@@ -603,12 +606,12 @@ function renderCard(){
   const note=$("staleNote");
   if(stale){note.hidden=false;note.textContent=(state.aspectUsed&&state.aspectUsed!==fmt().img)?"Formato cambiado: la ilustración se recorta. Crea una nueva para que encaje bien.":"Platos cambiados: la ilustración ya no coincide. Crea una nueva."}
   else note.hidden=true;
-  const post=state.aspect==="4:5";
+  const post=isText();
   $("prog").hidden=post||$("prog").hidden;
   $("dlIll").hidden=post||!state.image;$("dlIll").closest(".dlrow").classList.toggle("two",!$("dlIll").hidden);
   $("postHint").hidden=!post;$("storyHint").hidden=post;$("storyAction").hidden=post;$("postReady").hidden=!post;
   $("go").textContent=stale?"Crear ilustración nueva":(state.image?"Crear otra ilustración":"Crear ilustración");
-  $("redo").hidden=!state.image||isPhone()||state.aspect==="4:5";
+  $("redo").hidden=!state.image||isPhone()||isText();
   syncBar();
 }
 try{Promise.all(["400 40px 'Old Standard TT'","300 24px Jost","400 18px Jost","500 21px Jost"].map(f=>document.fonts.load(f))).then(renderCard);document.fonts.ready.then(renderCard)}catch(e){}
@@ -617,7 +620,7 @@ try{Promise.all(["400 40px 'Old Standard TT'","300 24px Jost","400 18px Jost","5
 let running=false;
 $("form").addEventListener("submit",async e=>{
   e.preventDefault();if(running)return;
-  if(state.aspect==="4:5"){setMsg("msg","Instagram post no lleva ilustración. Elige Story.","err");return}
+  if(isText()){setMsg("msg","Post · Texto no lleva ilustración. Elige Post · Imagen o Story.","err");return}
   const dishes=state.dishes.filter(d=>d.es.trim()||d.en.trim());
   if(!dishes.length&&themeKey()!=="cerrado"){setMsg("msg","Añade al menos un plato.","err");return}
   running=true;$("go").disabled=true;syncBar();const prog=$("prog");prog.hidden=false;prog.classList.toggle("mobile",isPhone());const bar=prog.firstElementChild;bar.style.width="4%";
@@ -671,7 +674,7 @@ async function toJpegDataUrl(blob){
 /* ---------- download ---------- */
 async function loadImg(src){const im=new Image();im.src=src;await im.decode();return im}
 async function renderPNG(){
-  const textOnly=state.aspect==="4:5";
+  const textOnly=isText();
   try{await Promise.all(["400 40px 'Old Standard TT'","300 24px Jost","400 18px Jost","500 21px Jost"].map(f=>document.fonts.load(f)).concat([document.fonts.ready]))}catch(e){}
   const img=state.image?await loadImg(state.image).catch(()=>null):null;
   const f=fmt(),c=document.createElement("canvas");c.width=f.W;c.height=f.H;
@@ -683,7 +686,7 @@ const isPhone=()=>matchMedia("(max-width:640px)").matches;
 async function saveCard(textOnly){
   setMsg("dlMsg","Preparando…");
   try{
-    const blob=await renderPNG();const name="menu-"+state.date+"-"+state.aspect.replace(":","x")+".png";
+    const blob=await renderPNG();const name="menu-"+state.date+"-"+(state.aspect==="4:5i"?"post-imagen":state.aspect==="4:5"?"post":"story")+".png";
     const file=new File([blob],name,{type:"image/png"});
     if(isPhone()&&navigator.canShare&&navigator.canShare({files:[file]})){
       try{await navigator.share({files:[file],title:"Menú del día"});setMsg("dlMsg","Listo.","ok");return}
@@ -695,14 +698,14 @@ async function saveCard(textOnly){
 $("dl").onclick=()=>saveCard();
 /* mobile bar: main action is "create" until an up-to-date image exists, then "save/share" */
 function syncBar(){
-  const post=state.aspect==="4:5";
+  const post=isText();
   const ready=post||(!!state.image&&!isStale());
   $("mMain").textContent=running?"Creando…":ready?"Guardar":($("go").textContent);
   $("mMain").disabled=running;
   $("mRedo").hidden=!ready||post;$("mRedo").disabled=running;
   $("mRedo").parentElement.classList.toggle("three",ready&&!post);
 }
-$("mMain").onclick=()=>{if(state.aspect==="4:5"||(!!state.image&&!isStale()))saveCard();else $("form").requestSubmit()};
+$("mMain").onclick=()=>{if(isText()||(!!state.image&&!isStale()))saveCard();else $("form").requestSubmit()};
 const regenerate=()=>{if(running)return;$("form").requestSubmit()};
 $("mRedo").onclick=regenerate;$("redo").onclick=regenerate;
 $("mView").onclick=()=>{const sec=$("cartaSec");const r=sec.getBoundingClientRect();
