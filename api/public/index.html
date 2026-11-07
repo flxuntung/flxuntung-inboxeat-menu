@@ -32,7 +32,6 @@ header .spacer{flex:1}
 /* type */
 .label{font-size:11px;letter-spacing:.22em;text-transform:uppercase;color:var(--ink-soft);font-weight:400}
 .hint{font-size:13px;color:var(--ink-soft);margin:0}
-.hint.intro{margin:0 0 12px}
 .msg{font-size:13px;min-height:1.4em;margin:0}
 .msg.ok{color:var(--ok)} .msg.err{color:var(--err)}
 
@@ -84,6 +83,8 @@ button:disabled{opacity:.35;cursor:default}
 .x:hover{color:var(--ink)}
 @media (hover:none){.dish .pen{opacity:.7}.dish .x{opacity:1}}
 .addrow{display:flex;justify-content:space-between;align-items:center;gap:16px;padding-top:4px}
+.addrow .link,.addrow summary{line-height:20px;display:block}
+.addrow details{display:block}
 details{display:grid;gap:12px}
 summary{list-style:none;cursor:pointer}
 summary::-webkit-details-marker{display:none}
@@ -92,7 +93,15 @@ textarea{min-height:120px;border:1.5px solid var(--rule-soft);padding:10px;resiz
 
 /* segmented control */
 .seg{display:grid;grid-template-columns:1fr 1fr 1fr;border:1.5px solid var(--rule);max-width:480px}
-.seg button{background:#fff;color:var(--ink);border:0;padding:12px 10px;letter-spacing:.12em;font-size:11px}
+.seg button{background:#fff;color:var(--ink);border:0;padding:12px 6px 11px;letter-spacing:.1em;font-size:11px;display:grid;justify-items:center;gap:3px;line-height:1.2;white-space:nowrap}
+.seg button .k{font-family:var(--serif);font-size:18px;letter-spacing:0;text-transform:none;line-height:1}
+.seg button .r{font-size:10px;letter-spacing:.14em;color:var(--ink-soft)}
+.seg button[aria-pressed="true"] .r{color:#bdbdbd}
+.seg button:not([aria-pressed="true"]):hover{background:var(--wash)}
+.sechead{display:flex;justify-content:space-between;align-items:baseline;gap:12px}
+.fmtnote{display:grid;gap:2px;border-left:1.5px solid var(--rule-soft);padding-left:12px}
+.fmtnote .hint b{font-weight:400;color:var(--ink)}
+h2 .cur{color:var(--ink);margin-left:.6em}
 .seg button+button{border-left:1.5px solid var(--rule)}
 .seg button[aria-pressed="true"]{background:var(--ink);color:#fff}
 
@@ -159,6 +168,8 @@ h2{font-weight:400;letter-spacing:.22em;text-transform:uppercase;font-size:11px;
   .dish input.es{font-size:19px}
   .dish input.en{font-size:15px}
   .seg{max-width:none}
+  .seg button{font-size:10.5px;letter-spacing:.07em}
+  .grid{gap:28px}
   .action,#dl,#redo{display:none}
   .dlrow.two{grid-template-columns:1fr}
   .preview{position:static}
@@ -230,6 +241,7 @@ h2{font-weight:400;letter-spacing:.22em;text-transform:uppercase;font-size:11px;
 
       <section class="step">
         <div class="body">
+          <div class="sechead"><span class="label">Platos</span></div>
           <div class="dishes" id="dishes"></div>
           <div class="addrow">
             <button type="button" class="link" id="add">+ Añadir plato</button>
@@ -248,16 +260,18 @@ h2{font-weight:400;letter-spacing:.22em;text-transform:uppercase;font-size:11px;
 
       <section class="step">
         <div class="body">
-          <p class="hint intro">Para Instagram, en este orden: 1 · Post con el menú, 2 · Post con la imagen, 3 · Story.</p>
+          <div class="sechead"><span class="label">Instagram</span><span class="hint">Publicar en este orden</span></div>
           <div class="seg" role="group" aria-label="Formato de la carta">
-            <button type="button" data-aspect="4:5" aria-pressed="true">Post · Texto</button>
-            <button type="button" data-aspect="4:5i" aria-pressed="false">Post · Imagen</button>
-            <button type="button" data-aspect="9:16" aria-pressed="false">Story · 9:16</button>
+            <button type="button" data-aspect="4:5" aria-pressed="true"><span class="k">1</span>Post · Texto<span class="r">4:5</span></button>
+            <button type="button" data-aspect="4:5i" aria-pressed="false"><span class="k">2</span>Post · Imagen<span class="r">4:5</span></button>
+            <button type="button" data-aspect="9:16" aria-pressed="false"><span class="k">3</span>Story<span class="r">9:16</span></button>
           </div>
           <select id="aspect" hidden aria-hidden="true"><option value="4:5">4:5</option><option value="4:5i">4:5 imagen</option><option value="9:16">9:16</option></select>
-          <p class="hint" id="postHint" hidden>Post: solo el menú, sin ilustración.</p>
-          <p class="hint" id="storyHint" hidden>Con ilustración. La misma ilustración sirve para Post y Story. Si cambias los platos, crea una nueva.</p>
-          <p class="hint" id="imgHint" hidden>Post: solo la ilustración en 4:5, sin texto. La misma ilustración sirve para la Story.</p>
+          <div class="fmtnote">
+            <p class="hint" id="postHint" hidden><b>Solo el menú</b>, sin ilustración.</p>
+            <p class="hint" id="imgHint" hidden><b>Solo la ilustración</b>, sin texto. Es la misma que en la Story.</p>
+            <p class="hint" id="storyHint" hidden><b>Ilustración y menú</b> juntos. Es la misma ilustración que en el post 2. Si cambias los platos, crea una nueva.</p>
+          </div>
         </div>
       </section>
 
@@ -273,7 +287,7 @@ h2{font-weight:400;letter-spacing:.22em;text-transform:uppercase;font-size:11px;
 
     <section class="preview" aria-labelledby="ch" id="cartaSec">
       <div class="top">
-        <h2 id="ch">Carta</h2>
+        <h2 id="ch">Carta<span class="cur" id="chFmt"></span></h2>
         <div class="links">
           <button type="button" class="link" id="redo" hidden>Otra ilustración</button>
         </div>
@@ -632,6 +646,7 @@ function renderCard(){
   const post=isText();
   $("prog").hidden=post||$("prog").hidden;
   $("dlIll").hidden=post||isImgOnly()||!state.image;$("dlIll").closest(".dlrow").classList.toggle("two",!$("dlIll").hidden);
+  {const L={"4:5":"1 · Post · Texto","4:5i":"2 · Post · Imagen","9:16":"3 · Story"};$("chFmt").textContent=L[state.aspect]||""}
   $("postHint").hidden=!post;$("storyHint").hidden=post||isImgOnly();$("imgHint").hidden=!isImgOnly();$("storyAction").hidden=post;$("postReady").hidden=!post;
   $("go").textContent=stale?"Crear ilustración nueva":(state.image?"Crear otra ilustración":"Crear ilustración");
   $("redo").hidden=!state.image||isPhone()||isText();
