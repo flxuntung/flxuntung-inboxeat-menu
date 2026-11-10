@@ -269,7 +269,7 @@ h2{font-weight:400;letter-spacing:.22em;text-transform:uppercase;font-size:11px;
           </div>
           <select id="aspect" hidden aria-hidden="true"><option value="post">post</option><option value="9:16">9:16</option></select>
           <div class="fmtnote">
-            <p class="hint" id="postHint" hidden><b>Dos fotos para un carrusel:</b> 1 · la ilustración, 2 · el menú. Al guardar se descargan las dos. En Instagram elige primero la ilustración y después el menú.</p>
+            <p class="hint" id="postHint" hidden><b>Dos fotos para un carrusel:</b> 1 · la ilustración, 2 · el menú. En el móvil se guardan una tras otra: toca Guardar dos veces. En Instagram elige primero la ilustración y después el menú.</p>
             <p class="hint" id="storyHint" hidden><b>Ilustración y menú</b> en una sola imagen alta. Solo para Stories, no para el feed.</p>
           </div>
         </div>
@@ -351,6 +351,7 @@ if(!FORMATS[state.aspect])state.aspect="post";
 const fmt=()=>FORMATS[state.aspect]||FORMATS["4:5"];
 const isText=()=>state.aspect==="4:5";
 const isPost=()=>state.aspect==="post";
+let postStep=0;
 const sig=d=>JSON.stringify(d.map(x=>(x.es||"").trim().toLowerCase()).filter(Boolean));
 function setMsg(id,t,kind){const m=$(id);m.textContent=t;m.className="msg"+(kind?" "+kind:"");const mm=document.getElementById("mMsg");if(mm&&(id==="msg"||id==="dlMsg")){mm.textContent=t;mm.className="msg"+(kind?" "+kind:"")}}
 
@@ -412,7 +413,7 @@ $("num").oninput=e=>{
   renderCard();save();
 };
 $("num").onblur=()=>{if(!state.num.trim()){state.numManual=false;applyAutoNum();renderCard();save()}};
-function setAspect(v){state.aspect=v;$("aspect").value=v;document.querySelectorAll(".seg [data-aspect]").forEach(b=>b.setAttribute("aria-pressed",String(b.dataset.aspect===v)));renderCard();save()}
+function setAspect(v){postStep=0;state.aspect=v;$("aspect").value=v;document.querySelectorAll(".seg [data-aspect]").forEach(b=>b.setAttribute("aria-pressed",String(b.dataset.aspect===v)));renderCard();save()}
 document.querySelectorAll(".seg [data-aspect]").forEach(b=>b.onclick=()=>setAspect(b.dataset.aspect));
 $("pasteBox").addEventListener("toggle",()=>{$("pasteField").hidden=!$("pasteBox").open;if($("pasteBox").open)$("paste").focus()});
 $("theme").onchange=e=>{state.theme=e.target.value;renderCard();save()};
@@ -654,7 +655,7 @@ function renderCard(){
   $("prog").hidden=post||$("prog").hidden;
   $("dlIll").hidden=post||isPost()||isImgOnly()||!state.image;$("dlIll").closest(".dlrow").classList.toggle("two",!$("dlIll").hidden);
   {const L={"post":"Post · 2 fotos","9:16":"Story"};$("chFmt").textContent=L[state.aspect]||""}
-  $("dl").textContent=isPost()?"Descargar post · 2 fotos":"Descargar story";
+  $("dl").textContent=twoPhotos()?(postStep?"Guardar foto 2 · menú":"Guardar foto 1 · ilustración"):isPost()?"Descargar post · 2 fotos":"Descargar story";
   $("postHint").hidden=!isPost();$("storyHint").hidden=isPost();$("storyAction").hidden=post;$("postReady").hidden=!post;
   $("go").textContent=stale?"Crear ilustración nueva":(state.image?"Crear otra ilustración":"Crear ilustración");
   $("redo").hidden=!state.image||isPhone()||isText();
@@ -701,7 +702,7 @@ $("form").addEventListener("submit",async e=>{
       const blob=await r.blob();
       dataUrl=await toJpegDataUrl(blob);
     }catch(x){console.warn("image proxy failed",x)}
-    state.image=dataUrl;state.imageSig=sig(state.dishes);state.aspectUsed=fmt().img;
+    postStep=0;state.image=dataUrl;state.imageSig=sig(state.dishes);state.aspectUsed=fmt().img;
     renderCard();save();bar.style.width="100%";
     setMsg("msg","Ilustración lista.","ok");if(isPhone())$("cartaSec").scrollIntoView({behavior:"smooth",block:"start"});
   }catch(err){
@@ -738,10 +739,26 @@ async function renderPost(){
   files.push(new File([await mk(x=>drawCard(x,1080,1350,null,true))],"menu-"+state.date+"-"+(img?"2-":"")+"menu.png",{type:"image/png"}));
   return files;
 }
+// On the phone the post is shared one photo at a time (iOS Safari duplicates files when sharing several at once):
+// first tap = photo 1 (illustration), second tap = photo 2 (menu).
+const twoPhotos=()=>isPost()&&isPhone()&&!!state.image;
+function dlLabels(){
+  if(twoPhotos()){return postStep?"Guardar foto 2 · menú":"Guardar foto 1 · ilustración"}
+  return "Guardar";
+}
 async function saveCard(){
   setMsg("dlMsg","Preparando…");
   try{
-    const files=isPost()?await renderPost():[new File([await renderPNG()],"menu-"+state.date+"-story.png",{type:"image/png"})];
+    let files=isPost()?await renderPost():[new File([await renderPNG()],"menu-"+state.date+"-story.png",{type:"image/png"})];
+    if(twoPhotos()&&files.length>1&&navigator.canShare&&navigator.canShare({files:[files[0]]})){
+      const f=files[postStep];
+      try{
+        await navigator.share({files:[f],title:"Menú del día"});
+        if(postStep===0){postStep=1;setMsg("dlMsg","Foto 1 guardada. Ahora toca otra vez para la foto 2 (menú).","ok")}
+        else{postStep=0;setMsg("dlMsg","Listo: las 2 fotos. En Instagram elige primero la ilustración y después el menú.","ok")}
+      }catch(e){if(e&&e.name==="AbortError")setMsg("dlMsg","");else throw e}
+      renderCard();return;
+    }
     if(isPhone()&&navigator.canShare&&navigator.canShare({files})){
       try{await navigator.share({files,title:"Menú del día"});setMsg("dlMsg",files.length>1?"Listo: 2 fotos.":"Listo.","ok");return}
       catch(e){if(e&&e.name==="AbortError"){setMsg("dlMsg","");return}}
@@ -755,7 +772,7 @@ $("dl").onclick=()=>saveCard();
 function syncBar(){
   const post=isText();
   const ready=post||(!!state.image&&!isStale());
-  $("mMain").textContent=running?"Creando…":ready?"Guardar":($("go").textContent);
+  $("mMain").textContent=running?"Creando…":ready?dlLabels():($("go").textContent);
   $("mMain").disabled=running;
   $("mRedo").hidden=!ready||post;$("mRedo").disabled=running;
   $("mRedo").parentElement.classList.toggle("three",ready&&!post);
