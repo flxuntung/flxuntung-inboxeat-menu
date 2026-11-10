@@ -344,7 +344,7 @@ h2{font-weight:400;letter-spacing:.22em;text-transform:uppercase;font-size:11px;
 
 <div class="allsheet" id="allSheet" hidden role="dialog" aria-labelledby="allT">
   <div class="allbox">
-    <div class="allhead"><h2 id="allT">Tus 3 fotos</h2><button type="button" class="link" id="allClose">Cerrar</button></div>
+    <div class="allhead"><h2 id="allT">Tus 3 fotos</h2><button type="button" class="btn ghost" id="allClose">Cerrar ✕</button></div>
     <p class="hint">Si falta alguna en tus fotos, mantén pulsada la imagen y elige «Guardar en Fotos».</p>
     <div id="allList" class="alllist"></div>
   </div>
@@ -789,14 +789,16 @@ function showAll(out){
   $("allSheet").hidden=false;
 }
 $("allClose").onclick=()=>{$("allSheet").hidden=true};
+$("allSheet").onclick=e=>{if(e.target===$("allSheet"))$("allSheet").hidden=true};
 async function saveCard(){
   setMsg("dlMsg","Preparando…");
   try{
     const out=await renderAll();const files=out.map(o=>o.file);
     if(!state.image)setMsg("dlMsg","Sin ilustración solo se descarga el menú. Crea una ilustración para tener las 3 fotos.","err");
     if(isPhone()&&navigator.canShare&&navigator.canShare({files})){
-      try{await navigator.share({files})}catch(e){if(e&&e.name==="AbortError"){setMsg("dlMsg","");return}}
-      showAll(out);if(state.image)setMsg("dlMsg","Listo: "+files.length+" fotos.","ok");return;
+      // success: no extra window. Only if sharing fails, the overview opens so each photo can be saved by hand.
+      try{await navigator.share({files})}catch(e){if(e&&e.name==="AbortError"){setMsg("dlMsg","");return}showAll(out);return}
+      if(state.image)setMsg("dlMsg","Listo: "+files.length+" fotos.","ok");return;
     }
     for(const f of files){download(f,f.name);await new Promise(r=>setTimeout(r,500))}
     if(state.image)setMsg("dlMsg",files.length+" fotos descargadas: 1 y 2 para el post, 3 para la story.","ok");
