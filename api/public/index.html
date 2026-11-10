@@ -285,7 +285,7 @@ h2{font-weight:400;letter-spacing:.22em;text-transform:uppercase;font-size:11px;
           <select id="aspect" hidden aria-hidden="true"><option value="post">post</option><option value="9:16">9:16</option></select>
           <div class="fmtnote">
             <p class="hint" id="postHint" hidden><b>Carrusel de dos fotos:</b> 1 · el menú, 2 · la ilustración. En Instagram elige primero el menú y después la ilustración. Aquí solo eliges la vista previa: «Descargar todo» guarda siempre las 3 fotos.</p>
-            <p class="hint" id="storyHint" hidden><b>Ilustración y menú</b> en una sola imagen alta. Solo para Stories, no para el feed. Aquí solo eliges la vista previa: «Descargar todo» guarda siempre las 3 fotos.</p>
+            <p class="hint" id="storyHint" hidden><b>Ilustración y menú</b> en una sola imagen alta. Para la Story de Instagram y para WhatsApp, no para el feed. Aquí solo eliges la vista previa: «Descargar todo» guarda siempre las 3 fotos.</p>
           </div>
         </div>
       </section>
@@ -331,7 +331,7 @@ h2{font-weight:400;letter-spacing:.22em;text-transform:uppercase;font-size:11px;
       <ol class="outs">
         <li><b>1 · Post · Menú</b><span class="r">4:5</span><span class="d">Primera foto del carrusel.</span></li>
         <li><b>2 · Post · Ilustración</b><span class="r">4:5</span><span class="d">Segunda foto del carrusel.</span></li>
-        <li><b>3 · Story</b><span class="r">9:16</span><span class="d">Solo para Stories.</span></li>
+        <li><b>3 · Story</b><span class="r">9:16</span><span class="d">Para la Story de Instagram y para WhatsApp.</span></li>
       </ol>
       <div class="dlrow">
         <button type="button" class="btn" id="dl">Descargar todo · 3 fotos</button>
@@ -760,7 +760,7 @@ const isPhone=()=>matchMedia("(max-width:640px)").matches;
 const OUTS=[
   {k:"menu",label:"1 · Post · Menú",fmt:"4:5",desc:"Primera foto del carrusel en el feed."},
   {k:"ilustracion",label:"2 · Post · Ilustración",fmt:"4:5",desc:"Segunda foto del mismo carrusel."},
-  {k:"story",label:"3 · Story",fmt:"9:16",desc:"Solo para Stories, no para el feed."},
+  {k:"story",label:"3 · Story",fmt:"9:16",desc:"Para la Story de Instagram y para WhatsApp, no para el feed."},
 ];
 async function renderAll(){
   try{await Promise.all(["400 40px 'Old Standard TT'","300 24px Jost","400 18px Jost","500 21px Jost"].map(f=>document.fonts.load(f)).concat([document.fonts.ready]))}catch(e){}
