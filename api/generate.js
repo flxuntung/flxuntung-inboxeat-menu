@@ -32,7 +32,7 @@ module.exports = async (req, res) => {
     const refs = host && L.env("CHARACTER_REFERENCE", "on") !== "off"
       ? L.characterRefs(theme).map((f) => ({
           image: `https://${host}/${f}`, mime_type: "image/jpeg",
-          text: f.includes("perico") ? "Character reference for PERICO: keep his face, glasses, cap and black chef outfit. Keep his dark-brown hair clearly visible under the cap, just a bit shorter than in this reference: ear-length, falling around his ears. He is never bald or shaved."
+          text: f.includes("perico") ? "Character reference for PERICO: keep his face, glasses, cap and black chef outfit. Facial hair: only a faint three-day stubble, never a goatee, moustache or full beard. Keep his dark-brown hair clearly visible under the cap, just a bit shorter than in this reference: ear-length, falling around his ears. He is never bald or shaved."
                : "Character reference for MARIA: keep her face, braided bun with red ribbon, beauty mark, pearls, black chef outfit and yellow sneakers exactly as shown." }))
       : null;
     let data;
