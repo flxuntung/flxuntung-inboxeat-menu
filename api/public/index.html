@@ -335,7 +335,6 @@ h2{font-weight:400;letter-spacing:.22em;text-transform:uppercase;font-size:11px;
       </ol>
       <div class="dlrow">
         <button type="button" class="btn" id="dl">Descargar todo · 3 fotos</button>
-        <button type="button" class="btn ghost" id="dlIll" hidden>Solo imagen</button>
       </div>
       <p class="msg" id="dlMsg" role="status"></p>
     </section>
@@ -371,8 +370,8 @@ let pw="";
 try{pw=localStorage.getItem(PWKEY)||""}catch(e){}
 try{const s=JSON.parse(localStorage.getItem(KEY)||"null");if(s&&s.dishes)state={...state,...s}}catch(e){}
 const save=()=>{try{localStorage.setItem(KEY,JSON.stringify(state))}catch(e){console.warn("no se pudo guardar el estado",e)}};
-// minIH: smallest image height as a share of the width (16:9 = 0.5625; the post with image may crop to 2:1 to keep the text readable)
-const FORMATS={"4:5":{W:1080,H:1350,img:"16:9"},"4:5i":{W:1080,H:1350,img:"16:9",minIH:0.5},"9:16":{W:1080,H:1920,img:"16:9"},"post":{W:1080,H:1350,img:"16:9"}};
+// minIH: smallest image height in the story as a share of the width; the 4:5 illustration is cropped to that band
+const FORMATS={"4:5":{W:1080,H:1350,img:"4:5"},"9:16":{W:1080,H:1920,img:"4:5",minIH:0.8},"post":{W:1080,H:1350,img:"4:5"}};
 if(state.aspect==="4:5"||state.aspect==="4:5i")state.aspect="post";
 if(!FORMATS[state.aspect])state.aspect="post";
 const fmt=()=>FORMATS[state.aspect]||FORMATS["4:5"];
@@ -556,7 +555,7 @@ const dayTint=()=>dayTheme().bg;
 // The Instagram post (4:5) is the reference: text only, 1080x1350. Story reuses its text size;
 // if needed the illustration gets a little shorter (never below 16:9) so the text keeps that size.
 function drawCard(ctx,W,H,img,textOnly){
-  const f=fmt();const [rw,rh]=f.img.split(":").map(Number);
+  const f=H/W>1.5?FORMATS["9:16"]:fmt();const [rw,rh]=f.img.split(":").map(Number);
   const s=W/1080;
   let IH=textOnly?0:Math.round(W*rh/rw);
   // text block: editorial hierarchy (serif for dishes and prices, spaced sans for labels), scaled to fit below the image
@@ -615,7 +614,7 @@ function drawCard(ctx,W,H,img,textOnly){
   if(textOnly){}
   else if(img){
     const r=Math.max(W/img.naturalWidth,IH/img.naturalHeight),sw=W/r,sh=IH/r;
-    ctx.drawImage(img,(img.naturalWidth-sw)/2,(img.naturalHeight-sh)/2,sw,sh,0,0,W,IH);
+    ctx.drawImage(img,(img.naturalWidth-sw)/2,(img.naturalHeight-sh)*0.4,sw,sh,0,0,W,IH);
   }else{
     ctx.fillStyle="#f4f4f2";ctx.fillRect(0,0,W,IH);
     ctx.fillStyle="#8a8a8a";ctx.textAlign="center";ctx.font=`300 ${30*s}px Jost, Arial, sans-serif`;
@@ -639,20 +638,9 @@ function drawCard(ctx,W,H,img,textOnly){
 function drawImageOnly(ctx,W,H,img){
   ctx.fillStyle=dayTint();ctx.fillRect(0,0,W,H);
   if(!img){ctx.fillStyle="#8a8a8a";ctx.textAlign="center";ctx.font=`300 ${30*W/1080}px Jost, Arial, sans-serif`;ctx.fillText("La ilustración aparece aquí",W/2,H/2);return}
-  // fit to the width, slightly zoomed (crops a little at the sides) so less background has to be extended
-  const z=1.18,dw=W*z,dh=dw*img.naturalHeight/img.naturalWidth,dx=(W-dw)/2,dy=(H-dh)/2;
-  // extend the studio background: stretch the top and bottom pixel rows of the illustration (column by column) and blur them
-  const iw=img.naturalWidth,ih=img.naturalHeight,band=Math.max(2,Math.round(ih*0.01));
-  ctx.save();try{ctx.filter=`blur(${Math.round(W*0.06)}px)`}catch(e){}
-  ctx.drawImage(img,0,0,iw,band,dx-40,-40,dw+80,dy+dh*0.3+40);
-  ctx.drawImage(img,0,ih-band,iw,band,dx-40,dy+dh*0.7,dw+80,H-dy-dh*0.7+40);
-  ctx.restore();
-  // the illustration on top, its upper and lower edge faded out so it melts into the extended background
-  const oc=document.createElement("canvas");oc.width=Math.round(dw);oc.height=Math.round(dh);const ox=oc.getContext("2d");
-  ox.drawImage(img,0,0,oc.width,oc.height);ox.globalCompositeOperation="destination-in";
-  const g=ox.createLinearGradient(0,0,0,oc.height);g.addColorStop(0,"rgba(0,0,0,0)");g.addColorStop(0.2,"#000");g.addColorStop(0.8,"#000");g.addColorStop(1,"rgba(0,0,0,0)");
-  ox.fillStyle=g;ox.fillRect(0,0,oc.width,oc.height);
-  ctx.drawImage(oc,dx,dy);
+  // the illustration is generated in 4:5 and fills the frame completely (cover, centred)
+  const r=Math.max(W/img.naturalWidth,H/img.naturalHeight),sw=W/r,sh=H/r;
+  ctx.drawImage(img,(img.naturalWidth-sw)/2,(img.naturalHeight-sh)/2,sw,sh,0,0,W,H);
 }
 const isImgOnly=()=>state.aspect==="4:5i";
 const paint=(ctx,W,H,img)=>isImgOnly()?drawImageOnly(ctx,W,H,img):drawCard(ctx,W,H,img,isText());
@@ -679,13 +667,12 @@ function renderCard(){
   else note.hidden=true;
   const post=isText();
   $("prog").hidden=post||$("prog").hidden;
-  $("dlIll").hidden=post||isPost()||isImgOnly()||!state.image;$("dlIll").closest(".dlrow").classList.toggle("two",!$("dlIll").hidden);
   {const L={"post":"Post · 2 fotos","9:16":"Story"};$("chFmt").textContent=L[state.aspect]||""}
   $("dl").textContent="Descargar todo · 3 fotos";
   $("postHint").hidden=!isPost();$("storyHint").hidden=isPost();$("storyAction").hidden=post;$("postReady").hidden=!post;
   $("go").textContent=stale?"Crear ilustración nueva":(state.image?"Crear otra ilustración":"Crear ilustración");
   $("redo").hidden=!state.image||isPhone()||isText();
-  syncBar();
+  syncBar();prepareOut();
 }
 try{Promise.all(["400 40px 'Old Standard TT'","300 24px Jost","400 18px Jost","500 21px Jost"].map(f=>document.fonts.load(f))).then(renderCard);document.fonts.ready.then(renderCard)}catch(e){}
 
@@ -790,17 +777,22 @@ function showAll(out){
 }
 $("allClose").onclick=()=>{$("allSheet").hidden=true};
 $("allSheet").onclick=e=>{if(e.target===$("allSheet"))$("allSheet").hidden=true};
+let outCache=null,outKey="",outTimer=0,outBusy=null;
+const outSig=()=>JSON.stringify([state.dishes,state.date,state.num,themeKey(),(state.image||"").length,(state.image||"").slice(-64)]);
+function prepareOut(){clearTimeout(outTimer);outTimer=setTimeout(async()=>{const k=outSig();if(k===outKey&&outCache)return;
+  try{const p=renderAll();outBusy=p;const o=await p;if(outSig()===k){outCache=o;outKey=k}}catch(e){console.warn(e)}finally{outBusy=null}},700)}
 async function saveCard(){
   setMsg("dlMsg","Preparando…");
   try{
-    const out=await renderAll();const files=out.map(o=>o.file);
+    const ready=outCache&&outKey===outSig();
+    const out=ready?outCache:await renderAll();const files=out.map(o=>o.file);
     if(!state.image)setMsg("dlMsg","Sin ilustración solo se descarga el menú. Crea una ilustración para tener las 3 fotos.","err");
     if(isPhone()&&navigator.canShare&&navigator.canShare({files})){
       // success: no extra window. Only if sharing fails, the overview opens so each photo can be saved by hand.
       try{await navigator.share({files})}catch(e){if(e&&e.name==="AbortError"){setMsg("dlMsg","");return}showAll(out);return}
       if(state.image)setMsg("dlMsg","Listo: "+files.length+" fotos.","ok");return;
     }
-    for(const f of files){download(f,f.name);await new Promise(r=>setTimeout(r,500))}
+    files.forEach(f=>download(f,f.name));
     if(state.image)setMsg("dlMsg",files.length+" fotos descargadas: 1 y 2 para el post, 3 para la story.","ok");
   }catch(e){setMsg("dlMsg","No se pudo crear la imagen.","err")}
 }
@@ -820,19 +812,6 @@ $("mRedo").onclick=regenerate;$("redo").onclick=regenerate;
 $("mView").onclick=()=>{const sec=$("cartaSec");const r=sec.getBoundingClientRect();
   if(r.top<80&&r.bottom>0)window.scrollTo({top:0,behavior:"smooth"});else sec.scrollIntoView({behavior:"smooth",block:"start"})};
 window.addEventListener("scroll",()=>{const r=$("cartaSec").getBoundingClientRect();$("mView").textContent=(r.top<120)?"Editar menú":"Ver carta"},{passive:true});
-$("dlIll").onclick=async()=>{
-  if(!state.image)return;
-  try{
-    const b=await (await fetch(state.image)).blob();
-    const name="imagen-"+state.date+(b.type==="image/png"?".png":".jpg");
-    const file=new File([b],name,{type:b.type||"image/jpeg"});
-    if(isPhone()&&navigator.canShare&&navigator.canShare({files:[file]})){
-      try{await navigator.share({files:[file],title:"Imagen del menú"});setMsg("dlMsg","Listo.","ok");return}
-      catch(e){if(e&&e.name==="AbortError")return}
-    }
-    download(b,name);setMsg("dlMsg","Imagen descargada.","ok");
-  }catch(e){setMsg("dlMsg","No se pudo descargar la imagen.","err")}
-};
 
 /* ---------- boot ---------- */
 if(state.numManual===undefined)state.numManual=!!(state.num&&state.num.trim());
