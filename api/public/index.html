@@ -139,17 +139,7 @@ h2{font-weight:400;letter-spacing:.22em;text-transform:uppercase;font-size:11px;
 .loader .bar i{position:absolute;left:0;top:0;bottom:0;width:0;background:var(--ink);transition:width .5s linear}
 .loader .eta{font-size:12px;color:var(--ink-soft)}
 @media (prefers-reduced-motion:reduce){.loader .draw,.loader .flap,.loader .hat,.loader .glow{animation:none;opacity:1;stroke-dashoffset:0}}
-/* the three photos: swipeable strip, all tiles the same height */
-.strip{--th:min(52vh,430px);display:grid;grid-auto-flow:column;grid-auto-columns:max-content;gap:16px;overflow-x:auto;scroll-snap-type:x mandatory;width:100%;padding-bottom:4px;scrollbar-width:thin}
-.tile{margin:0;scroll-snap-align:start;display:grid;gap:10px;align-content:start}
-.tile canvas{display:block;height:var(--th);width:auto;background:#fff;box-shadow:0 0 0 1px var(--rule-soft)}
-.tile figcaption{display:grid;grid-template-columns:auto 1fr;column-gap:10px;max-width:calc(var(--th)*.8)}
-.tile figcaption b{font-weight:400;letter-spacing:.14em;text-transform:uppercase;font-size:11px}
-.tile figcaption .r{justify-self:end;font-size:11px;letter-spacing:.1em;color:var(--ink-soft)}
-.tile figcaption .d{grid-column:1/-1;font-size:13px;color:var(--ink-soft);line-height:1.4}
-.dots{display:flex;gap:8px;justify-content:center;pointer-events:none}
-.dots i{width:6px;height:6px;border-radius:50%;background:var(--rule-soft);cursor:pointer}
-.dots i.on{background:var(--ink)}
+#cardCanvas{display:block;width:100%;max-width:360px;height:auto;justify-self:center;background:#fff;box-shadow:0 0 0 1px var(--rule-soft)}
 .cardwrap{gap:14px;place-items:stretch}
 .slidelab{margin:6px 0 0;justify-self:start;font-size:11px;letter-spacing:.22em;text-transform:uppercase;color:var(--ink-soft)}
 .preview .links{display:flex;gap:20px;flex-wrap:wrap}
@@ -158,11 +148,14 @@ h2{font-weight:400;letter-spacing:.22em;text-transform:uppercase;font-size:11px;
 .preview .btn{width:100%}
 
 /* what the download contains */
-.outs{list-style:none;margin:0;padding:0;display:grid;border-top:1.5px solid var(--rule-soft)}
-.outs li{display:grid;grid-template-columns:auto 1fr;column-gap:10px;padding:9px 0;border-bottom:1.5px solid var(--rule-soft);font-size:13px}
-.outs b,.allit b{font-weight:400;letter-spacing:.14em;text-transform:uppercase;font-size:11px;color:var(--ink)}
-.outs .r,.allit .r{justify-self:end;font-size:11px;letter-spacing:.14em;color:var(--ink-soft)}
-.outs .d{grid-column:1/-1;color:var(--ink-soft)}
+.outs{display:grid;gap:8px;border-top:1.5px solid var(--rule-soft);padding-top:14px}
+.outs ol{list-style:none;margin:0;padding:0;display:grid;gap:8px;counter-reset:o}
+.outs li{display:grid;grid-template-columns:22px 1fr;font-size:13px;line-height:1.4;counter-increment:o}
+.outs li::before{content:counter(o);font-family:var(--serif);font-size:16px;line-height:1.15;color:var(--ink-soft);grid-row:1/3}
+.outs b{font-weight:400;color:var(--ink)}
+.outs .d{color:var(--ink-soft)}
+.allit b{font-weight:400;letter-spacing:.14em;text-transform:uppercase;font-size:11px;color:var(--ink)}
+.allit .r{justify-self:end;font-size:11px;letter-spacing:.14em;color:var(--ink-soft)}
 .allsheet{position:fixed;inset:0;z-index:40;background:rgba(17,17,17,.45);display:grid;align-items:end}
 .allbox{background:#fff;max-height:92vh;overflow:auto;padding:20px 20px calc(24px + env(safe-area-inset-bottom,0px));display:grid;gap:14px;max-width:720px;width:100%;justify-self:center}
 .allhead{display:flex;justify-content:space-between;align-items:center}
@@ -201,7 +194,7 @@ h2{font-weight:400;letter-spacing:.22em;text-transform:uppercase;font-size:11px;
   .dlrow.two{grid-template-columns:1fr}
   .preview{position:static}
   .cardwrap{padding:0;background:none}
-  .strip{--th:min(50vh,360px)}
+  #cardCanvas{max-width:100%}
   .mbar{display:grid;gap:8px;position:fixed;left:0;right:0;bottom:0;z-index:20;background:#fff;border-top:1.5px solid var(--rule);
     padding:10px max(16px,env(safe-area-inset-right,0px)) calc(12px + env(safe-area-inset-bottom,0px)) max(16px,env(safe-area-inset-left,0px))}
   .mbar .msg{min-height:1.2em;font-size:12px;text-align:center}
@@ -299,18 +292,13 @@ h2{font-weight:400;letter-spacing:.22em;text-transform:uppercase;font-size:11px;
 
     <section class="preview" aria-labelledby="ch" id="cartaSec">
       <div class="top">
-        <h2 id="ch">Tus 3 fotos</h2>
+        <h2 id="ch">Vista previa · Story</h2>
         <div class="links">
           <button type="button" class="link" id="redo" hidden>Otra ilustración</button>
         </div>
       </div>
       <div class="cardwrap">
-        <div class="strip" id="strip">
-          <figure class="tile"><canvas id="cardCanvas" aria-label="Post, foto 1: menú"></canvas><figcaption><b>1 · Post</b><span class="r">Menú · 4:5</span><span class="d">Primera foto del carrusel de Instagram.</span></figcaption></figure>
-          <figure class="tile"><canvas id="cardCanvas2" aria-label="Post, foto 2: ilustración"></canvas><figcaption><b>2 · Post</b><span class="r">Ilustración · 4:5</span><span class="d">Segunda foto del mismo carrusel.</span></figcaption></figure>
-          <figure class="tile"><canvas id="cardCanvas3" aria-label="Story"></canvas><figcaption><b>3 · Story</b><span class="r">9:16</span><span class="d">Para la Story de Instagram y para WhatsApp.</span></figcaption></figure>
-        </div>
-        <div class="dots" id="dots" aria-hidden="true"><i class="on"></i><i></i><i></i></div>
+        <canvas id="cardCanvas" aria-label="Vista previa: Story"></canvas>
         <div class="loader" id="loader" hidden role="status" aria-live="polite">
           <div class="box">
             <svg viewBox="0 0 100 100" fill="none" stroke="#111" stroke-width="1.6" stroke-linejoin="round" stroke-linecap="round" aria-hidden="true">
@@ -331,6 +319,14 @@ h2{font-weight:400;letter-spacing:.22em;text-transform:uppercase;font-size:11px;
         </div>
       </div>
       <p class="hint" id="staleNote" hidden></p>
+      <div class="outs">
+        <p class="label">Se guardan 3 fotos</p>
+        <ol>
+          <li><b>Story</b><span class="d">La de la vista previa. Para WhatsApp y la Story de Instagram.</span></li>
+          <li><b>Post 1 · Menú</b><span class="d">Solo el texto. Primera foto del post de Instagram.</span></li>
+          <li><b>Post 2 · Ilustración</b><span class="d">Solo la imagen. Segunda foto del mismo post.</span></li>
+        </ol>
+      </div>
       <div class="dlrow">
         <button type="button" class="btn" id="dl">Descargar las 3 fotos</button>
       </div>
@@ -616,14 +612,19 @@ function drawCard(ctx,W,H,img,textOnly){
       // portrait illustration in the wide story band: show it whole like the old wide pictures (scene smaller, more background).
       // It is scaled to the band height (slightly zoomed, a little top/bottom background cropped) and the plain studio background
       // continues to the sides by stretching the outermost pixel column, so there is no gradient over the picture.
-      const z=1.15,dh=IH*z,dw=dh*iw/ih,dx=(W-dw)/2,dy=(IH-dh)*0.5;
-      // smooth edge colour: a thin edge strip squeezed to a few pixels high, so shadows and grain become a soft even tone
-      const edge=x0=>{const c=document.createElement("canvas");c.width=1;c.height=12;const e=c.getContext("2d");e.drawImage(img,x0,0,Math.max(2,Math.round(iw*0.01)),ih,0,0,1,12);return c};
+      const z=1,dh=IH*z,dw=dh*iw/ih,dx=(W-dw)/2,dy=(IH-dh)*0.5;
+      // side background: plain colours taken from the four corners of the illustration (top to bottom), so nothing from
+      // the picture gets stretched; the outer edge of the illustration melts softly into it (only plain background there)
+      const sc=document.createElement("canvas");sc.width=40;sc.height=50;const sx=sc.getContext("2d");sx.drawImage(img,0,0,40,50);
+      const col=(x,y)=>{const d=sx.getImageData(x,y,2,2).data;let r=0,g=0,b=0;for(let k=0;k<d.length;k+=4){r+=d[k];g+=d[k+1];b+=d[k+2]}const n=d.length/4;return `rgb(${r/n|0},${g/n|0},${b/n|0})`};
+      const side=(x0,x1,ct,cb)=>{const g=ctx.createLinearGradient(0,dy,0,dy+dh);g.addColorStop(0,ct);g.addColorStop(1,cb);ctx.fillStyle=g;ctx.fillRect(x0,0,x1-x0,IH)};
       ctx.save();ctx.beginPath();ctx.rect(0,0,W,IH);ctx.clip();
-      ctx.imageSmoothingQuality="high";
-      ctx.drawImage(edge(0),0,dy,Math.ceil(dx)+2,dh);
-      ctx.drawImage(edge(iw-Math.max(2,Math.round(iw*0.01))),Math.floor(dx+dw)-2,dy,W-Math.floor(dx+dw)+2,dh);
-      ctx.drawImage(img,dx,dy,dw,dh);
+      side(0,W/2,col(0,0),col(0,48));side(W/2,W,col(38,0),col(38,48));
+      const oc=document.createElement("canvas");oc.width=Math.round(dw);oc.height=Math.round(dh);const ox=oc.getContext("2d");
+      ox.drawImage(img,0,0,oc.width,oc.height);ox.globalCompositeOperation="destination-in";
+      const m=ox.createLinearGradient(0,0,oc.width,0);m.addColorStop(0,"rgba(0,0,0,0)");m.addColorStop(0.12,"#000");m.addColorStop(0.88,"#000");m.addColorStop(1,"rgba(0,0,0,0)");
+      ox.fillStyle=m;ox.fillRect(0,0,oc.width,oc.height);
+      ctx.drawImage(oc,dx,dy);
       ctx.restore();
     }else{
       const r=Math.max(W/iw,IH/ih),sw=W/r,sh=IH/r;
@@ -664,9 +665,7 @@ function renderCard(){
   rq=requestAnimationFrame(()=>{
     const size=(c,W,H)=>{if(c.width!==W||c.height!==H){c.width=W;c.height=H}return c.getContext("2d")};
     const im=getImg(state.image);
-    drawCard(size($("cardCanvas"),720,900),720,900,null,true);
-    drawImageOnly(size($("cardCanvas2"),720,900),720,900,im);
-    drawCard(size($("cardCanvas3"),720,1280),720,1280,im,false);
+    drawCard(size($("cardCanvas"),900,1600),900,1600,im,false);
   });
   const th=THEMES[themeKey()];const autoKey=autoThemeKey(state.date);
   $("themeHint").textContent=(!state.theme||state.theme==="auto")
@@ -755,9 +754,9 @@ function download(blob,name){const a=document.createElement("a");a.href=URL.crea
 const isPhone=()=>matchMedia("(max-width:640px)").matches;
 // All three Instagram files in one go: 1 post menu, 2 post illustration (both 4:5), 3 story (9:16).
 const OUTS=[
-  {k:"menu",label:"1 · Post · Menú",fmt:"4:5",desc:"Primera foto del carrusel en el feed."},
-  {k:"ilustracion",label:"2 · Post · Ilustración",fmt:"4:5",desc:"Segunda foto del mismo carrusel."},
-  {k:"story",label:"3 · Story",fmt:"9:16",desc:"Para la Story de Instagram y para WhatsApp, no para el feed."},
+  {k:"story",label:"1 · Story",fmt:"9:16",desc:"Para WhatsApp y la Story de Instagram."},
+  {k:"post-menu",label:"2 · Post 1 · Menú",fmt:"4:5",desc:"Primera foto del post de Instagram."},
+  {k:"post-ilustracion",label:"3 · Post 2 · Ilustración",fmt:"4:5",desc:"Segunda foto del mismo post."},
 ];
 async function renderAll(){
   try{await Promise.all(["400 40px 'Old Standard TT'","300 24px Jost","400 18px Jost","500 21px Jost"].map(f=>document.fonts.load(f)).concat([document.fonts.ready]))}catch(e){}
@@ -766,11 +765,9 @@ async function renderAll(){
     const b=await new Promise(res=>c.toBlob(res,"image/jpeg",0.94));return new Uint8Array(await b.arrayBuffer())};
   const out=[];
   const add=async(o,W,H,draw)=>{const bytes=await mk(W,H,draw);out.push({...o,file:new File([bytes],"inboxeat-"+state.date+"-"+o.label[0]+"-"+o.k+".jpg",{type:"image/jpeg",lastModified:Date.now()+out.length})})};
-  await add(OUTS[0],1080,1350,x=>drawCard(x,1080,1350,null,true));
-  if(img){
-    await add(OUTS[1],1080,1350,x=>drawImageOnly(x,1080,1350,img));
-    await add(OUTS[2],1080,1920,x=>drawCard(x,1080,1920,img,false));
-  }
+  if(img)await add(OUTS[0],1080,1920,x=>drawCard(x,1080,1920,img,false));
+  await add(OUTS[1],1080,1350,x=>drawCard(x,1080,1350,null,true));
+  if(img)await add(OUTS[2],1080,1350,x=>drawImageOnly(x,1080,1350,img));
   return out;
 }
 // overview sheet with the three photos and what each one is for; long-press saves a single photo if sharing missed one
@@ -803,7 +800,7 @@ async function saveCard(){
       if(state.image)setMsg("dlMsg","Listo: "+files.length+" fotos.","ok");return;
     }
     files.forEach(f=>download(f,f.name));
-    if(state.image)setMsg("dlMsg",files.length+" fotos descargadas: 1 y 2 para el post, 3 para la story.","ok");
+    if(state.image)setMsg("dlMsg",files.length+" fotos descargadas: 1 story, 2 y 3 para el post.","ok");
   }catch(e){setMsg("dlMsg","No se pudo crear la imagen.","err")}
 }
 $("dl").onclick=()=>saveCard();
@@ -823,10 +820,6 @@ $("mView").onclick=()=>{const sec=$("cartaSec");const r=sec.getBoundingClientRec
   if(r.top<80&&r.bottom>0)window.scrollTo({top:0,behavior:"smooth"});else sec.scrollIntoView({behavior:"smooth",block:"start"})};
 window.addEventListener("scroll",()=>{const r=$("cartaSec").getBoundingClientRect();$("mView").textContent=(r.top<120)?"Editar menú":"Ver fotos"},{passive:true});
 
-$("strip").addEventListener("scroll",()=>{const st=$("strip"),t=[...st.children];let k=0,best=1e9;
-  t.forEach((el,i)=>{const d=Math.abs(el.offsetLeft-st.scrollLeft);if(d<best){best=d;k=i}});
-  [...$("dots").children].forEach((d,i)=>d.classList.toggle("on",i===k))},{passive:true});
-[...$("dots").children].forEach((d,i)=>{d.style.pointerEvents="auto";d.onclick=()=>{const el=$("strip").children[i];$("strip").scrollTo({left:el.offsetLeft,behavior:"smooth"})}});
 /* ---------- boot ---------- */
 if(state.numManual===undefined)state.numManual=!!(state.num&&state.num.trim());
 fillForm();applyAutoNum();renderCard();
