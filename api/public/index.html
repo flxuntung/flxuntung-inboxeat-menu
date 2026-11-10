@@ -371,7 +371,7 @@ try{pw=localStorage.getItem(PWKEY)||""}catch(e){}
 try{const s=JSON.parse(localStorage.getItem(KEY)||"null");if(s&&s.dishes)state={...state,...s}}catch(e){}
 const save=()=>{try{localStorage.setItem(KEY,JSON.stringify(state))}catch(e){console.warn("no se pudo guardar el estado",e)}};
 // minIH: smallest image height in the story as a share of the width; the 4:5 illustration is cropped to that band
-const FORMATS={"4:5":{W:1080,H:1350,img:"4:5"},"9:16":{W:1080,H:1920,img:"4:5",minIH:0.8},"post":{W:1080,H:1350,img:"4:5"}};
+const FORMATS={"4:5":{W:1080,H:1350,img:"4:5"},"9:16":{W:1080,H:1920,img:"4:5",minIH:0.5625,maxIH:0.5625},"post":{W:1080,H:1350,img:"4:5"}};
 if(state.aspect==="4:5"||state.aspect==="4:5i")state.aspect="post";
 if(!FORMATS[state.aspect])state.aspect="post";
 const fmt=()=>FORMATS[state.aspect]||FORMATS["4:5"];
@@ -607,14 +607,14 @@ function drawCard(ctx,W,H,img,textOnly){
   const rRef=Math.min(1.3,((1350-64*0.75-64*1.1)*s)/need);
   if(!textOnly){
     const ihMax=H-pad*0.6-bottomPad-need*rRef;
-    IH=Math.round(Math.max(W*(f.minIH||9/16),Math.min(IH,ihMax)));
+    IH=Math.round(Math.max(W*(f.minIH||9/16),Math.min(IH,ihMax,f.maxIH?W*f.maxIH:Infinity)));
   }
   const top=textOnly?pad*0.75:IH+pad*0.6, avail=H-top-bottomPad;
   ctx.fillStyle=dayTint();ctx.fillRect(0,0,W,H);
   if(textOnly){}
   else if(img){
     const r=Math.max(W/img.naturalWidth,IH/img.naturalHeight),sw=W/r,sh=IH/r;
-    ctx.drawImage(img,(img.naturalWidth-sw)/2,(img.naturalHeight-sh)*0.4,sw,sh,0,0,W,IH);
+    ctx.drawImage(img,(img.naturalWidth-sw)/2,(img.naturalHeight-sh)*0.42,sw,sh,0,0,W,IH);
   }else{
     ctx.fillStyle="#f4f4f2";ctx.fillRect(0,0,W,IH);
     ctx.fillStyle="#8a8a8a";ctx.textAlign="center";ctx.font=`300 ${30*s}px Jost, Arial, sans-serif`;
