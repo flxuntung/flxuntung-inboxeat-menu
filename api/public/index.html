@@ -365,7 +365,7 @@ try{pw=localStorage.getItem(PWKEY)||""}catch(e){}
 try{const s=JSON.parse(localStorage.getItem(KEY)||"null");if(s&&s.dishes)state={...state,...s}}catch(e){}
 const save=()=>{try{localStorage.setItem(KEY,JSON.stringify(state))}catch(e){console.warn("no se pudo guardar el estado",e)}};
 // minIH: smallest image height in the story as a share of the width; the 4:5 illustration is cropped to that band
-const FORMATS={"4:5":{W:1080,H:1350,img:"4:5"},"9:16":{W:1080,H:1920,img:"4:5",minIH:0.5625,maxIH:0.5625},"post":{W:1080,H:1350,img:"4:5"}};
+const FORMATS={"4:5":{W:1080,H:1350,img:"16:9"},"9:16":{W:1080,H:1920,img:"16:9",minIH:0.5625,maxIH:0.5625},"post":{W:1080,H:1350,img:"16:9+4:5"}};
 state.aspect="post";
 if(!FORMATS[state.aspect])state.aspect="post";
 const fmt=()=>FORMATS[state.aspect]||FORMATS["4:5"];
@@ -438,7 +438,7 @@ $("pasteBox").addEventListener("toggle",()=>{$("pasteField").hidden=!$("pasteBox
 $("theme").onchange=e=>{state.theme=e.target.value;renderCard();save()};
 $("add").onclick=()=>{state.dishes.push({es:"",en:"",auto:true});renderDishes();save();$("es-"+(state.dishes.length-1)).focus()};
 $("newMenu").onclick=()=>{
-  state={...state,date:todayISO(),numManual:false,theme:"auto",dishes:[{es:"",en:"",auto:true}],image:null,imageSig:""};
+  state={...state,date:todayISO(),numManual:false,theme:"auto",dishes:[{es:"",en:"",auto:true}],image:null,imagePost:null,imageSig:""};
   applyAutoNum();fillForm();save();setMsg("msg","");$("es-0").focus();
 };
 $("parse").onclick=()=>{
@@ -549,7 +549,7 @@ const dayTint=()=>dayTheme().bg;
 // The Instagram post (4:5) is the reference: text only, 1080x1350. Story reuses its text size;
 // if needed the illustration gets a little shorter (never below 16:9) so the text keeps that size.
 function drawCard(ctx,W,H,img,textOnly){
-  const f=H/W>1.5?FORMATS["9:16"]:fmt();const [rw,rh]=f.img.split(":").map(Number);
+  const f=H/W>1.5?FORMATS["9:16"]:FORMATS["4:5"];const [rw,rh]=f.img.split(":").map(Number);
   const s=W/1080;
   let IH=textOnly?0:Math.round(W*rh/rw);
   // text block: editorial hierarchy (serif for dishes and prices, spaced sans for labels), scaled to fit below the image
@@ -708,23 +708,19 @@ $("form").addEventListener("submit",async e=>{
     start.dishes.forEach((d,i)=>{const s=state.dishes.find(x=>x.es.trim()===d.es&&!x.en)||state.dishes[i];if(s&&!s.en&&s.es.trim()===d.es){s.en=d.en;s.auto=true}});
     renderDishes();renderCard();save();
     setMsg("msg","Creando la ilustración…");$("ldStep").textContent="Creando la imagen";
-    let images=start.images||[],status=start.status;
     const deadline=Date.now()+4*60*1000;
-    while(!images.length&&Date.now()<deadline){
-      await new Promise(r=>setTimeout(r,3000));
-      const st=await api("/api/status?id="+encodeURIComponent(start.taskId));
-      status=st.status;images=st.images||[];
-      if(/FAIL|ERROR|CANCEL/.test(status))throw new Error("La generación falló en Freepik ("+status+").");
-    }
-    if(!images.length)throw new Error("Tiempo de espera agotado. Inténtalo de nuevo.");
-    setMsg("msg","Descargando la imagen…");$("ldStep").textContent="Casi lista";$("ldBar").style.width="98%";
-    let dataUrl=images[0];
-    try{
-      const r=await api("/api/image?url="+encodeURIComponent(images[0]));
-      const blob=await r.blob();
-      dataUrl=await toJpegDataUrl(blob);
-    }catch(x){console.warn("image proxy failed",x)}
-    state.image=dataUrl;state.imageSig=sig(state.dishes);state.aspectUsed=fmt().img;
+    const waitFor=async id=>{let images=[];
+      while(!images.length&&Date.now()<deadline){
+        await new Promise(r=>setTimeout(r,3000));
+        const st=await api("/api/status?id="+encodeURIComponent(id));images=st.images||[];
+        if(/FAIL|ERROR|CANCEL/.test(st.status))throw new Error("La generación falló en Freepik ("+st.status+").");
+      }
+      if(!images.length)throw new Error("Tiempo de espera agotado. Inténtalo de nuevo.");
+      try{const r=await api("/api/image?url="+encodeURIComponent(images[0]));return await toJpegDataUrl(await r.blob())}
+      catch(x){console.warn("image proxy failed",x);return images[0]}};
+    const [wide,tall]=await Promise.all([waitFor(start.taskId),waitFor(start.taskIdPost)]);
+    $("ldStep").textContent="Casi lista";$("ldBar").style.width="98%";
+    state.image=wide;state.imagePost=tall;state.imageSig=sig(state.dishes);state.aspectUsed=fmt().img;
     renderCard();save();bar.style.width="100%";
     setMsg("msg","Ilustración lista.","ok");if(isPhone())$("cartaSec").scrollIntoView({behavior:"smooth",block:"start"});
   }catch(err){
@@ -735,7 +731,7 @@ $("form").addEventListener("submit",async e=>{
 
 async function toJpegDataUrl(blob){
   const bmp=await createImageBitmap(blob);
-  const max=1600,r=Math.min(1,max/Math.max(bmp.width,bmp.height));
+  const max=1400,r=Math.min(1,max/Math.max(bmp.width,bmp.height));
   const c=document.createElement("canvas");c.width=Math.round(bmp.width*r);c.height=Math.round(bmp.height*r);
   const ctx=c.getContext("2d");ctx.fillStyle="#fff";ctx.fillRect(0,0,c.width,c.height);ctx.drawImage(bmp,0,0,c.width,c.height);
   return c.toDataURL("image/jpeg",0.9);
@@ -767,7 +763,8 @@ async function renderAll(){
   const add=async(o,W,H,draw)=>{const bytes=await mk(W,H,draw);out.push({...o,file:new File([bytes],"inboxeat-"+state.date+"-"+o.label[0]+"-"+o.k+".jpg",{type:"image/jpeg",lastModified:Date.now()+out.length})})};
   if(img)await add(OUTS[0],1080,1920,x=>drawCard(x,1080,1920,img,false));
   await add(OUTS[1],1080,1350,x=>drawCard(x,1080,1350,null,true));
-  if(img)await add(OUTS[2],1080,1350,x=>drawImageOnly(x,1080,1350,img));
+  const imgP=state.imagePost?await loadImg(state.imagePost).catch(()=>null):null;
+  if(img&&imgP)await add(OUTS[2],1080,1350,x=>drawImageOnly(x,1080,1350,imgP));
   return out;
 }
 // overview sheet with the three photos and what each one is for; long-press saves a single photo if sharing missed one
@@ -785,7 +782,7 @@ function showAll(out){
 $("allClose").onclick=()=>{$("allSheet").hidden=true};
 $("allSheet").onclick=e=>{if(e.target===$("allSheet"))$("allSheet").hidden=true};
 let outCache=null,outKey="",outTimer=0,outBusy=null;
-const outSig=()=>JSON.stringify([state.dishes,state.date,state.num,themeKey(),(state.image||"").length,(state.image||"").slice(-64)]);
+const outSig=()=>JSON.stringify([state.dishes,state.date,state.num,themeKey(),(state.image||"").length,(state.image||"").slice(-64),(state.imagePost||"").slice(-64)]);
 function prepareOut(){clearTimeout(outTimer);outTimer=setTimeout(async()=>{const k=outSig();if(k===outKey&&outCache)return;
   try{const p=renderAll();outBusy=p;const o=await p;if(outSig()===k){outCache=o;outKey=k}}catch(e){console.warn(e)}finally{outBusy=null}},700)}
 async function saveCard(){

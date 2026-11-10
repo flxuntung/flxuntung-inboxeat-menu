@@ -218,7 +218,13 @@ const VARIANCE = {
 
 const pick = (arr) => arr[Math.floor(Math.random() * arr.length)];
 
-function buildPrompt(en, theme) {
+// Two framings of the same scene: wide for the story (shown uncropped), tall for the Instagram post (shown uncropped).
+const FRAME = {
+  wide: ["a wide landscape 16:9 frame", "wide landscape 16:9 picture. The diorama is small in the frame: it takes up about 40% of the width and about 60% of the height, like a product on a big empty studio table."],
+  tall: ["a portrait 4:5 frame", "portrait 4:5 picture. The diorama takes up about 70% of the width and about half of the height."],
+};
+function buildPrompt(en, theme, shape) {
+  if (!shape) { const b = buildPrompt(en, theme, "@@"); return b ? { wide: b.split("@@F@@").join(FRAME.wide[0]).split("@@C@@").join(FRAME.wide[1]), tall: b.split("@@F@@").join(FRAME.tall[0]).split("@@C@@").join(FRAME.tall[1]) } : null; }
   const d = en.map((s) => String(s || "").trim()).filter(Boolean);
   if (!d.length && theme !== "cerrado") return "";
   const t = THEME_TOY[theme] || THEME_TOY.none;
@@ -226,7 +232,7 @@ function buildPrompt(en, theme) {
   const landmark = pick(VARIANCE.landmark);
   const v1 = pick(VARIANCE.valencia);
   let v2 = pick(VARIANCE.valencia); while (v2 === v1) v2 = pick(VARIANCE.valencia);
-  return `Charming toy photography of a small diorama built from plastic building bricks, centred in a portrait 4:5 frame: ${scene}. The scene clearly takes place in Valencia, Spain: at the back of the diorama stands ${landmark}, built from bricks, smaller than the figures' main action and slightly out of focus. Add two small Valencian details on the base: ${v1}, and ${v2}. Valencia is shown only through this architecture and these details, never through fruit or food. Warm Mediterranean feeling, natural and charming, no flags, no coats of arms, no patriotic symbols.${d.length && theme !== "cerrado" ? `\n\nTODAY'S MENU, very important: ${d.map((x) => `"${x}"`).join(", ")}. The food in this image comes from this menu. Pick the two or three most recognisable ingredients of these dishes (the first course "${d[0]}" first) and show them clearly as brick-built props that Perico and Maria hold, carry, cook or that sit prominently on the base, big enough to recognise at a glance. If the scene mentions food or "today\'s menu ingredients", use exactly these ingredients. Do not add any other fruit or food that is not part of today\'s menu: no oranges, lemons or other citrus unless the menu contains them.` : ""}
+  return `Charming toy photography of a small diorama built from plastic building bricks, centred in @@F@@: ${scene}. The scene clearly takes place in Valencia, Spain: at the back of the diorama stands ${landmark}, built from bricks, smaller than the figures' main action and slightly out of focus. Add two small Valencian details on the base: ${v1}, and ${v2}. Valencia is shown only through this architecture and these details, never through fruit or food. Warm Mediterranean feeling, natural and charming, no flags, no coats of arms, no patriotic symbols.${d.length && theme !== "cerrado" ? `\n\nTODAY'S MENU, very important: ${d.map((x) => `"${x}"`).join(", ")}. The food in this image comes from this menu. Pick the two or three most recognisable ingredients of these dishes (the first course "${d[0]}" first) and show them clearly as brick-built props that Perico and Maria hold, carry, cook or that sit prominently on the base, big enough to recognise at a glance. If the scene mentions food or "today\'s menu ingredients", use exactly these ingredients. Do not add any other fruit or food that is not part of today\'s menu: no oranges, lemons or other citrus unless the menu contains them.` : ""}
 
 CAST, very important: there are exactly TWO minifigures in the whole image, Perico once and Maria once. Never show Perico twice, never show Maria twice, no clones, no reflections of them, no third person, no extra minifigures, no crowd, no waiters, customers or bystanders. No pets or incidental animals either (no dogs, cats, birds or seagulls); only animals that are part of the scene itself, such as seafood, are allowed.
 
@@ -235,7 +241,7 @@ The two characters must be clearly recognisable, with these exact features (matc
 - ${t.party ? MARIA_CASUAL : MARIA}.
 ${t.scifi ? "In this scene both wear original retro sci-fi space-explorer outfits (simple space suits in grey, white and dark blue, small helmets or headsets), while keeping their faces, Perico's glasses and ear-length dark-brown hair and Maria's hairstyle recognisable. Generic original sci-fi design only: no lightsabers, no robes, no helmets, ships, droids or costumes from any existing film franchise.\n" : ""}Keep them as genuine toy-brick minifigures (blocky torso, cylindrical head, C-shaped hands, printed face details), not realistic people. Before finishing, count the minifigures: there must be exactly two, one Perico and one Maria.
 
-Composition, important: portrait 4:5 picture. The diorama sits in the centre ${base}, ${camera}. The whole diorama with the figures and the landmark is shown complete and sits in the middle of the picture, taking up about three quarters of the width and about half of the height. Leave a clear margin of calm plain studio background on all four sides. Nothing touches or is cut off by the edges of the frame: no bricks, props, shadows or figures at the left, right, top or bottom edge. Seamless, plain studio background in ${t.bg}, the same colour from edge to edge, no horizon line, no props outside the diorama.
+Composition, important: @@C@@ The diorama sits in the centre ${base}, ${camera}. The whole diorama with the figures and the landmark is shown complete, with a wide clear margin of calm plain studio background on all four sides. Nothing touches or is cut off by the edges of the frame: no bricks, props, shadows or figures at the left, right, top or bottom edge. No vignette, no darker corners. Seamless, plain studio background in ${t.bg}, the same colour from edge to edge, no horizon line, no props outside the diorama.
 
 Look: high-end macro product photography${t.scifi ? ", moody low-key lighting in dark greys with a few small cool blue light accents" : ""}, glossy plastic with realistic reflections, ${light}, soft shadow under the base, shallow depth of field, crisp focus on the main figure, clean and minimal, playful but stylish. Make this scene feel fresh and different, with its own composition and storytelling.
 
