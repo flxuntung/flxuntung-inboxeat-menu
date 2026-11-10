@@ -139,8 +139,18 @@ h2{font-weight:400;letter-spacing:.22em;text-transform:uppercase;font-size:11px;
 .loader .bar i{position:absolute;left:0;top:0;bottom:0;width:0;background:var(--ink);transition:width .5s linear}
 .loader .eta{font-size:12px;color:var(--ink-soft)}
 @media (prefers-reduced-motion:reduce){.loader .draw,.loader .flap,.loader .hat,.loader .glow{animation:none;opacity:1;stroke-dashoffset:0}}
-#cardCanvas,#cardCanvas2{display:block;width:100%;max-width:400px;height:auto;background:#fff;box-shadow:0 1px 0 rgba(0,0,0,.06),0 0 0 1px var(--rule-soft)}
-.cardwrap{gap:10px}
+/* the three photos: swipeable strip, all tiles the same height */
+.strip{--th:min(52vh,430px);display:grid;grid-auto-flow:column;grid-auto-columns:max-content;gap:16px;overflow-x:auto;scroll-snap-type:x mandatory;width:100%;padding-bottom:4px;scrollbar-width:thin}
+.tile{margin:0;scroll-snap-align:start;display:grid;gap:10px;align-content:start}
+.tile canvas{display:block;height:var(--th);width:auto;background:#fff;box-shadow:0 0 0 1px var(--rule-soft)}
+.tile figcaption{display:grid;grid-template-columns:auto 1fr;column-gap:10px;max-width:calc(var(--th)*.8)}
+.tile figcaption b{font-weight:400;letter-spacing:.14em;text-transform:uppercase;font-size:11px}
+.tile figcaption .r{justify-self:end;font-size:11px;letter-spacing:.1em;color:var(--ink-soft)}
+.tile figcaption .d{grid-column:1/-1;font-size:13px;color:var(--ink-soft);line-height:1.4}
+.dots{display:flex;gap:8px;justify-content:center;pointer-events:none}
+.dots i{width:6px;height:6px;border-radius:50%;background:var(--rule-soft);cursor:pointer}
+.dots i.on{background:var(--ink)}
+.cardwrap{gap:14px;place-items:stretch}
 .slidelab{margin:6px 0 0;justify-self:start;font-size:11px;letter-spacing:.22em;text-transform:uppercase;color:var(--ink-soft)}
 .preview .links{display:flex;gap:20px;flex-wrap:wrap}
 .dlrow{display:grid;grid-template-columns:1fr;gap:10px}
@@ -191,7 +201,7 @@ h2{font-weight:400;letter-spacing:.22em;text-transform:uppercase;font-size:11px;
   .dlrow.two{grid-template-columns:1fr}
   .preview{position:static}
   .cardwrap{padding:0;background:none}
-  #cardCanvas,#cardCanvas2{max-width:100%}
+  .strip{--th:min(50vh,360px)}
   .mbar{display:grid;gap:8px;position:fixed;left:0;right:0;bottom:0;z-index:20;background:#fff;border-top:1.5px solid var(--rule);
     padding:10px max(16px,env(safe-area-inset-right,0px)) calc(12px + env(safe-area-inset-bottom,0px)) max(16px,env(safe-area-inset-left,0px))}
   .mbar .msg{min-height:1.2em;font-size:12px;text-align:center}
@@ -275,25 +285,12 @@ h2{font-weight:400;letter-spacing:.22em;text-transform:uppercase;font-size:11px;
         </div>
       </section>
 
-      <section class="step">
-        <div class="body">
-          <div class="sechead"><span class="label">Instagram</span></div>
-          <div class="seg" role="group" aria-label="Formato de la carta">
-            <button type="button" data-aspect="post" aria-pressed="true">Post<span class="r">4:5 · 2 fotos</span></button>
-            <button type="button" data-aspect="9:16" aria-pressed="false">Story<span class="r">9:16</span></button>
-          </div>
-          <select id="aspect" hidden aria-hidden="true"><option value="post">post</option><option value="9:16">9:16</option></select>
-          <div class="fmtnote">
-            <p class="hint" id="postHint" hidden><b>Carrusel de dos fotos:</b> 1 · el menú, 2 · la ilustración. En Instagram elige primero el menú y después la ilustración. Aquí solo eliges la vista previa: «Descargar todo» guarda siempre las 3 fotos.</p>
-            <p class="hint" id="storyHint" hidden><b>Ilustración y menú</b> en una sola imagen alta. Para la Story de Instagram y para WhatsApp, no para el feed. Aquí solo eliges la vista previa: «Descargar todo» guarda siempre las 3 fotos.</p>
-          </div>
-        </div>
-      </section>
-
       <section class="step action" id="actionStep">
         <div class="body">
+          <div class="sechead"><span class="label">Ilustración</span></div>
+          <select id="aspect" hidden aria-hidden="true"><option value="post">post</option></select>
           <div id="storyAction"><button type="submit" class="btn" id="go">Crear ilustración</button></div>
-          <p class="hint" id="postReady" hidden>La carta está lista. Descárgala desde la vista previa.</p>
+          <p class="hint">Perico y Maria en Lego, según el tema y los platos. Tarda unos 45 segundos.</p>
           <div class="progress" id="prog" hidden><i></i></div>
           <p class="msg" id="msg" role="status"></p>
         </div>
@@ -302,12 +299,18 @@ h2{font-weight:400;letter-spacing:.22em;text-transform:uppercase;font-size:11px;
 
     <section class="preview" aria-labelledby="ch" id="cartaSec">
       <div class="top">
-        <h2 id="ch">Carta<span class="cur" id="chFmt"></span></h2>
+        <h2 id="ch">Tus 3 fotos</h2>
         <div class="links">
           <button type="button" class="link" id="redo" hidden>Otra ilustración</button>
         </div>
       </div>
-      <div class="cardwrap"><p class="slidelab" id="lab1" hidden>1 · Menú</p><canvas id="cardCanvas" aria-label="Vista previa de la carta"></canvas><p class="slidelab" id="lab2" hidden>2 · Ilustración</p><canvas id="cardCanvas2" aria-label="Vista previa del menú" hidden></canvas>
+      <div class="cardwrap">
+        <div class="strip" id="strip">
+          <figure class="tile"><canvas id="cardCanvas" aria-label="Post, foto 1: menú"></canvas><figcaption><b>1 · Post</b><span class="r">Menú · 4:5</span><span class="d">Primera foto del carrusel de Instagram.</span></figcaption></figure>
+          <figure class="tile"><canvas id="cardCanvas2" aria-label="Post, foto 2: ilustración"></canvas><figcaption><b>2 · Post</b><span class="r">Ilustración · 4:5</span><span class="d">Segunda foto del mismo carrusel.</span></figcaption></figure>
+          <figure class="tile"><canvas id="cardCanvas3" aria-label="Story"></canvas><figcaption><b>3 · Story</b><span class="r">9:16</span><span class="d">Para la Story de Instagram y para WhatsApp.</span></figcaption></figure>
+        </div>
+        <div class="dots" id="dots" aria-hidden="true"><i class="on"></i><i></i><i></i></div>
         <div class="loader" id="loader" hidden role="status" aria-live="polite">
           <div class="box">
             <svg viewBox="0 0 100 100" fill="none" stroke="#111" stroke-width="1.6" stroke-linejoin="round" stroke-linecap="round" aria-hidden="true">
@@ -328,13 +331,8 @@ h2{font-weight:400;letter-spacing:.22em;text-transform:uppercase;font-size:11px;
         </div>
       </div>
       <p class="hint" id="staleNote" hidden></p>
-      <ol class="outs">
-        <li><b>1 · Post · Menú</b><span class="r">4:5</span><span class="d">Primera foto del carrusel.</span></li>
-        <li><b>2 · Post · Ilustración</b><span class="r">4:5</span><span class="d">Segunda foto del carrusel.</span></li>
-        <li><b>3 · Story</b><span class="r">9:16</span><span class="d">Para la Story de Instagram y para WhatsApp.</span></li>
-      </ol>
       <div class="dlrow">
-        <button type="button" class="btn" id="dl">Descargar todo · 3 fotos</button>
+        <button type="button" class="btn" id="dl">Descargar las 3 fotos</button>
       </div>
       <p class="msg" id="dlMsg" role="status"></p>
     </section>
@@ -351,7 +349,7 @@ h2{font-weight:400;letter-spacing:.22em;text-transform:uppercase;font-size:11px;
 <div class="mbar" id="mbar" hidden>
   <p class="msg" id="mMsg" role="status"></p>
   <div class="mrow">
-    <button type="button" class="btn ghost" id="mView">Ver carta</button>
+    <button type="button" class="btn ghost" id="mView">Ver fotos</button>
     <button type="button" class="btn ghost" id="mRedo" hidden>Nueva imagen</button>
     <button type="button" class="btn" id="mMain">Crear ilustración</button>
   </div>
@@ -372,7 +370,7 @@ try{const s=JSON.parse(localStorage.getItem(KEY)||"null");if(s&&s.dishes)state={
 const save=()=>{try{localStorage.setItem(KEY,JSON.stringify(state))}catch(e){console.warn("no se pudo guardar el estado",e)}};
 // minIH: smallest image height in the story as a share of the width; the 4:5 illustration is cropped to that band
 const FORMATS={"4:5":{W:1080,H:1350,img:"4:5"},"9:16":{W:1080,H:1920,img:"4:5",minIH:0.5625,maxIH:0.5625},"post":{W:1080,H:1350,img:"4:5"}};
-if(state.aspect==="4:5"||state.aspect==="4:5i")state.aspect="post";
+state.aspect="post";
 if(!FORMATS[state.aspect])state.aspect="post";
 const fmt=()=>FORMATS[state.aspect]||FORMATS["4:5"];
 const isText=()=>state.aspect==="4:5";
@@ -664,14 +662,11 @@ let rq=0;
 function renderCard(){
   cancelAnimationFrame(rq);
   rq=requestAnimationFrame(()=>{
-    const f=fmt(),c=$("cardCanvas"),PW=900,PH=Math.round(PW*f.H/f.W);
-    if(c.width!==PW||c.height!==PH){c.width=PW;c.height=PH}
-    if(isPost()){
-      drawCard(c.getContext("2d"),PW,PH,null,true);
-      const c2=$("cardCanvas2");if(c2.width!==PW||c2.height!==PH){c2.width=PW;c2.height=PH}
-      drawImageOnly(c2.getContext("2d"),PW,PH,getImg(state.image));
-    }else paint(c.getContext("2d"),PW,PH,getImg(state.image));
-    $("cardCanvas2").hidden=!isPost();$("lab1").hidden=!isPost();$("lab2").hidden=!isPost();
+    const size=(c,W,H)=>{if(c.width!==W||c.height!==H){c.width=W;c.height=H}return c.getContext("2d")};
+    const im=getImg(state.image);
+    drawCard(size($("cardCanvas"),720,900),720,900,null,true);
+    drawImageOnly(size($("cardCanvas2"),720,900),720,900,im);
+    drawCard(size($("cardCanvas3"),720,1280),720,1280,im,false);
   });
   const th=THEMES[themeKey()];const autoKey=autoThemeKey(state.date);
   $("themeHint").textContent=(!state.theme||state.theme==="auto")
@@ -683,9 +678,8 @@ function renderCard(){
   else note.hidden=true;
   const post=isText();
   $("prog").hidden=post||$("prog").hidden;
-  {const L={"post":"Post · 2 fotos","9:16":"Story"};$("chFmt").textContent=L[state.aspect]||""}
-  $("dl").textContent="Descargar todo · 3 fotos";
-  $("postHint").hidden=!isPost();$("storyHint").hidden=isPost();$("storyAction").hidden=post;$("postReady").hidden=!post;
+  $("dl").textContent=state.image?"Descargar las 3 fotos":"Descargar el menú";
+  $("storyAction").hidden=post;
   $("go").textContent=stale?"Crear ilustración nueva":(state.image?"Crear otra ilustración":"Crear ilustración");
   $("redo").hidden=!state.image||isPhone()||isText();
   syncBar();prepareOut();
@@ -827,8 +821,12 @@ const regenerate=()=>{if(running)return;$("form").requestSubmit()};
 $("mRedo").onclick=regenerate;$("redo").onclick=regenerate;
 $("mView").onclick=()=>{const sec=$("cartaSec");const r=sec.getBoundingClientRect();
   if(r.top<80&&r.bottom>0)window.scrollTo({top:0,behavior:"smooth"});else sec.scrollIntoView({behavior:"smooth",block:"start"})};
-window.addEventListener("scroll",()=>{const r=$("cartaSec").getBoundingClientRect();$("mView").textContent=(r.top<120)?"Editar menú":"Ver carta"},{passive:true});
+window.addEventListener("scroll",()=>{const r=$("cartaSec").getBoundingClientRect();$("mView").textContent=(r.top<120)?"Editar menú":"Ver fotos"},{passive:true});
 
+$("strip").addEventListener("scroll",()=>{const st=$("strip"),t=[...st.children];let k=0,best=1e9;
+  t.forEach((el,i)=>{const d=Math.abs(el.offsetLeft-st.scrollLeft);if(d<best){best=d;k=i}});
+  [...$("dots").children].forEach((d,i)=>d.classList.toggle("on",i===k))},{passive:true});
+[...$("dots").children].forEach((d,i)=>{d.style.pointerEvents="auto";d.onclick=()=>{const el=$("strip").children[i];$("strip").scrollTo({left:el.offsetLeft,behavior:"smooth"})}});
 /* ---------- boot ---------- */
 if(state.numManual===undefined)state.numManual=!!(state.num&&state.num.trim());
 fillForm();applyAutoNum();renderCard();
