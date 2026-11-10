@@ -613,8 +613,24 @@ function drawCard(ctx,W,H,img,textOnly){
   ctx.fillStyle=dayTint();ctx.fillRect(0,0,W,H);
   if(textOnly){}
   else if(img){
-    const r=Math.max(W/img.naturalWidth,IH/img.naturalHeight),sw=W/r,sh=IH/r;
-    ctx.drawImage(img,(img.naturalWidth-sw)/2,(img.naturalHeight-sh)*0.42,sw,sh,0,0,W,IH);
+    const iw=img.naturalWidth,ih=img.naturalHeight;
+    if(iw/ih<W/IH){
+      // portrait illustration in the wide story band: show it whole like the old wide pictures (scene smaller, more background).
+      // It is scaled to the band height (slightly zoomed, a little top/bottom background cropped) and the plain studio background
+      // continues to the sides by stretching the outermost pixel column, so there is no gradient over the picture.
+      const z=1.15,dh=IH*z,dw=dh*iw/ih,dx=(W-dw)/2,dy=(IH-dh)*0.5;
+      // smooth edge colour: a thin edge strip squeezed to a few pixels high, so shadows and grain become a soft even tone
+      const edge=x0=>{const c=document.createElement("canvas");c.width=1;c.height=12;const e=c.getContext("2d");e.drawImage(img,x0,0,Math.max(2,Math.round(iw*0.01)),ih,0,0,1,12);return c};
+      ctx.save();ctx.beginPath();ctx.rect(0,0,W,IH);ctx.clip();
+      ctx.imageSmoothingQuality="high";
+      ctx.drawImage(edge(0),0,dy,Math.ceil(dx)+2,dh);
+      ctx.drawImage(edge(iw-Math.max(2,Math.round(iw*0.01))),Math.floor(dx+dw)-2,dy,W-Math.floor(dx+dw)+2,dh);
+      ctx.drawImage(img,dx,dy,dw,dh);
+      ctx.restore();
+    }else{
+      const r=Math.max(W/iw,IH/ih),sw=W/r,sh=IH/r;
+      ctx.drawImage(img,(iw-sw)/2,(ih-sh)/2,sw,sh,0,0,W,IH);
+    }
   }else{
     ctx.fillStyle="#f4f4f2";ctx.fillRect(0,0,W,IH);
     ctx.fillStyle="#8a8a8a";ctx.textAlign="center";ctx.font=`300 ${30*s}px Jost, Arial, sans-serif`;
