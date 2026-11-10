@@ -220,7 +220,7 @@ const pick = (arr) => arr[Math.floor(Math.random() * arr.length)];
 
 // Two framings of the same scene: wide for the story (shown uncropped), tall for the Instagram post (shown uncropped).
 const FRAME = {
-  wide: ["a wide landscape 16:9 frame", "wide landscape 16:9 picture. The diorama is small in the frame: it takes up about 40% of the width and about 60% of the height, like a product on a big empty studio table."],
+  wide: ["a wide landscape 16:9 frame", "wide landscape 16:9 picture. The diorama is small in the frame: it takes up only about one third of the width (never more than 38%) and about 60% of the height, like a product on a big empty studio table. Compact, tall rather than wide diorama, exactly in the horizontal centre."],
   tall: ["a portrait 4:5 frame", "portrait 4:5 picture. The diorama takes up about 70% of the width and about half of the height."],
 };
 function buildPrompt(en, theme, shape) {

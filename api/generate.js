@@ -30,7 +30,7 @@ module.exports = async (req, res) => {
       : null;
     // Two pictures of the same scene: 16:9 for the story, 4:5 for the post. Each is shown whole, never cropped.
     const start = async (prompt, aspect) => {
-      const payload = { prompt, aspect_ratio: aspect, resolution: L.env("IMAGE_RESOLUTION", "1K").toUpperCase() };
+      const payload = { prompt, aspect_ratio: aspect, resolution: L.env("IMAGE_RESOLUTION", "2K").toUpperCase() };
       let data;
       try {
         data = await L.freepik(`/text-to-image/${L.modelPath()}`, { method: "POST", body: JSON.stringify(refs ? { ...payload, reference_images: refs } : payload) });
@@ -41,13 +41,13 @@ module.exports = async (req, res) => {
       const task = (data && data.data) || data || {};
       return { id: task.task_id || task.id, task, data };
     };
-    const [w, t] = await Promise.all([start(prompts.wide, "16:9"), start(prompts.tall, "4:5")]);
+    // One picture per menu (16:9). The story shows it whole, the post shows a 4:5 section of the same picture.
+    const w = await start(prompts.wide, "16:9"), t = w;
     const task = w.task, taskId = w.id, data = w.data, prompt = prompts.wide;
     if (!taskId || !t.id) return L.json(res, 502, { error: "Freepik no devolvió un identificador de tarea.", detail: data });
     const generated = Array.isArray(task.generated) ? task.generated : [];
     L.json(res, 200, {
       taskId,
-      taskIdPost: t.id,
       status: String(task.status || "CREATED").toUpperCase(),
       images: generated,
       dishes,
