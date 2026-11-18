@@ -430,8 +430,9 @@ function renderDishes(){
 const regrow=()=>document.querySelectorAll(".dish textarea").forEach(t=>{t.style.height="auto";t.style.height=t.scrollHeight+"px"});
 addEventListener("resize",regrow);try{document.fonts.ready.then(regrow)}catch(e){}
 /* menu number: counts weekdays (Mon-Fri) from a reference menu; typing a number moves the reference */
-const REFKEY="inboxeat-numref";
-let numRef={date:"2026-10-22",num:610};
+// v2: fixed anchor 18 Nov 2026 = menu 629; older saved anchors on the devices are ignored
+const REFKEY="inboxeat-numref-v2";
+let numRef={date:"2026-11-18",num:629};
 try{const r=JSON.parse(localStorage.getItem(REFKEY)||"null");if(r&&r.date&&r.num)numRef=r}catch(e){}
 function weekdaysBetween(a,b){
   const d0=new Date(a+"T00:00:00Z"),d1=new Date(b+"T00:00:00Z");const sign=d1>=d0?1:-1;let n=0;
@@ -863,7 +864,8 @@ const wake=()=>{if(document.visibilityState==="visible"&&!running&&rollover()){f
 document.addEventListener("visibilitychange",wake);addEventListener("focus",wake);addEventListener("pageshow",wake);setInterval(wake,60000);
 /* ---------- boot ---------- */
 if(state.numManual===undefined)state.numManual=!!(state.num&&state.num.trim());
-rollover();fillForm();applyAutoNum();renderCard();
+if(!state.refV2){state.refV2=true;state.numManual=false}
+rollover();fillForm();applyAutoNum();renderCard();save();
 if(pw)enter();else{$("gate").hidden=false}
 </script>
 </body>
