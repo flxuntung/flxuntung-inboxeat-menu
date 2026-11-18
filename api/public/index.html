@@ -161,6 +161,14 @@ h2{font-weight:400;letter-spacing:.22em;text-transform:uppercase;font-size:11px;
 .allit figcaption{display:grid;grid-template-columns:auto 1fr;column-gap:10px}
 .allit .d{grid-column:1/-1;font-size:13px;color:var(--ink-soft)}
 
+/* what is being made right now: theme, day, number */
+.today{display:grid;gap:2px;padding:16px 18px;border-left:4px solid var(--ink);background:var(--wash)}
+.today b{font-weight:500;letter-spacing:.2em;text-transform:uppercase;font-size:22px;line-height:1.3}
+.today .meta{font-size:14px;color:#3c3c3c}
+.today .warn{margin:8px 0 0;font-size:13px;color:#111;background:#fff;border:1.5px solid var(--err);padding:8px 10px}
+.today .warn button{margin-left:6px;text-decoration:underline}
+.minfo{margin:0;text-align:center;font-size:11px;letter-spacing:.14em;text-transform:uppercase}
+
 /* password gate */
 .gate{max-width:360px;margin:14vh auto 0;display:grid;gap:26px;text-align:center}
 .gate img{width:110px;justify-self:center}
@@ -170,7 +178,7 @@ h2{font-weight:400;letter-spacing:.22em;text-transform:uppercase;font-size:11px;
 /* mobile */
 .mbar{display:none}
 @media (max-width:840px){
-  body{padding-bottom:calc(136px + env(safe-area-inset-bottom,0px))}
+  body{padding-bottom:calc(158px + env(safe-area-inset-bottom,0px))}
   header{height:60px;margin-bottom:28px}
   header img{height:38px}
   .brand span{display:none}
@@ -227,6 +235,12 @@ h2{font-weight:400;letter-spacing:.22em;text-transform:uppercase;font-size:11px;
 
       <section class="step">
         <div class="body">
+          <div class="today" id="today" aria-live="polite">
+            <span class="label" id="tdLabel">Menú de hoy</span>
+            <b id="tdTheme"></b>
+            <span class="meta" id="tdMeta"></span>
+            <p class="warn" id="tdWarn" hidden></p>
+          </div>
           <div class="fields">
             <div class="field">
               <label class="label" for="date">Fecha</label>
@@ -251,6 +265,7 @@ h2{font-weight:400;letter-spacing:.22em;text-transform:uppercase;font-size:11px;
               <option value="none">Sin tema</option>
             </select>
             <p class="hint" id="themeHint"></p>
+            <p class="hint">El número se cuenta solo de lunes a viernes. Si un día no hubo menú, corrígelo una vez y sigue desde ahí.</p>
           </div>
         </div>
       </section>
@@ -339,6 +354,7 @@ h2{font-weight:400;letter-spacing:.22em;text-transform:uppercase;font-size:11px;
   </div>
 </div>
 <div class="mbar" id="mbar" hidden>
+  <p class="minfo" id="mInfo"></p>
   <p class="msg" id="mMsg" role="status"></p>
   <div class="mrow">
     <button type="button" class="btn ghost" id="mView">Ver fotos</button>
@@ -439,7 +455,7 @@ $("pasteBox").addEventListener("toggle",()=>{$("pasteField").hidden=!$("pasteBox
 $("theme").onchange=e=>{state.theme=e.target.value;renderCard();save()};
 $("add").onclick=()=>{state.dishes.push({es:"",en:"",auto:true});renderDishes();save();$("es-"+(state.dishes.length-1)).focus()};
 $("newMenu").onclick=()=>{
-  state={...state,date:todayISO(),numManual:false,theme:"auto",dishes:[{es:"",en:"",auto:true}],image:null,imagePost:null,imageSig:""};
+  state={...state,date:todayISO(),dayStamp:todayISO(),numManual:false,theme:"auto",dishes:[{es:"",en:"",auto:true}],image:null,imagePost:null,imageSig:""};
   applyAutoNum();fillForm();save();setMsg("msg","");$("es-0").focus();
 };
 $("parse").onclick=()=>{
@@ -678,6 +694,20 @@ function renderCard(){
   $("themeHint").textContent=(!state.theme||state.theme==="auto")
     ?(th.name?"Hoy: "+th.name+". Cambia el tema solo si este menú es distinto.":"Fin de semana: sin tema. Elige uno si hace falta.")
     :(state.theme===autoKey?"Coincide con el día.":"Tema cambiado a mano para este menú. Los colores siguen al tema.");
+  {const tk=themeKey(),T=THEMES[tk],today=todayISO(),isToday=state.date===today;
+    const long=iso=>{try{return new Intl.DateTimeFormat("es-ES",{weekday:"long",day:"numeric",month:"long",timeZone:"UTC"}).format(new Date(iso+"T00:00:00Z"))}catch(e){return iso}};
+    const box=$("today");box.style.background=T.bg;box.style.borderLeftColor=T.accent;box.style.color=T.dark?"#f2f1ec":"#111";
+    $("tdLabel").style.color=$("tdMeta").style.color=T.dark?"#c8c7c1":"#3c3c3c";
+    $("tdLabel").textContent=isToday?"Menú de hoy":"Menú de otro día";
+    $("tdTheme").textContent=T.name||"Sin tema";$("tdTheme").style.color=T.accent;
+    $("tdMeta").textContent=long(state.date)+" · nº "+String(state.num||"").replace(/^#/,"");
+    const w=[];const manual=state.theme&&state.theme!=="auto"&&state.theme!==autoKey;
+    if(!isToday)w.push("La fecha no es hoy ("+long(today)+").");
+    if(manual)w.push("Tema cambiado a mano. Por el día tocaría: "+(THEMES[autoKey].name||"Sin tema")+".");
+    const W=$("tdWarn");W.hidden=!w.length;W.textContent=w.join(" ");
+    if(w.length){const b=document.createElement("button");b.type="button";b.className="link";b.textContent=!isToday?"Poner hoy":"Volver al tema del día";
+      b.onclick=()=>{if(!isToday){state.date=today;state.numManual=false;applyAutoNum()}else{state.theme="auto"}fillForm();save()};W.appendChild(b)}
+    $("mInfo").textContent=(T.name||"Sin tema")+" · nº "+String(state.num||"").replace(/^#/,"")+(isToday?"":" · no es hoy");$("mInfo").style.color=w.length?"var(--err)":"var(--ink-soft)";}
   const stale=isStale();
   const note=$("staleNote");
   if(stale){note.hidden=false;note.textContent=(state.aspectUsed&&state.aspectUsed!==fmt().img)?"Formato cambiado: la ilustración se recorta. Crea una nueva para que encaje bien.":"Platos cambiados: la ilustración ya no coincide. Crea una nueva."}
@@ -823,9 +853,17 @@ $("mView").onclick=()=>{const sec=$("cartaSec");const r=sec.getBoundingClientRec
   if(r.top<80&&r.bottom>0)window.scrollTo({top:0,behavior:"smooth"});else sec.scrollIntoView({behavior:"smooth",block:"start"})};
 window.addEventListener("scroll",()=>{const r=$("cartaSec").getBoundingClientRect();$("mView").textContent=(r.top<120)?"Editar menú":"Ver fotos"},{passive:true});
 
+function rollover(){
+  const t=todayISO();if(state.dayStamp===t)return false;
+  const old=state.date<t;state.dayStamp=t;
+  if(old){state={...state,date:t,numManual:false,theme:"auto",dishes:[{es:"",en:"",auto:true}],image:null,imagePost:null,imageSig:""};applyAutoNum()}
+  save();return old;
+}
+const wake=()=>{if(document.visibilityState==="visible"&&!running&&rollover()){fillForm();setMsg("msg","Nuevo día: menú de hoy preparado.","ok")}};
+document.addEventListener("visibilitychange",wake);addEventListener("focus",wake);addEventListener("pageshow",wake);setInterval(wake,60000);
 /* ---------- boot ---------- */
 if(state.numManual===undefined)state.numManual=!!(state.num&&state.num.trim());
-fillForm();applyAutoNum();renderCard();
+rollover();fillForm();applyAutoNum();renderCard();
 if(pw)enter();else{$("gate").hidden=false}
 </script>
 </body>
